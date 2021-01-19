@@ -2,19 +2,21 @@
 #' Tambem separa oceanicos e continentais.
 #'
 #' @description This function reads the output from read_family.R to filter MCSs
-#' Over the AMazon basin
+#' over a region of interest
 #'
-#' @param arqi Arquivo de entrada: a_YYYY.csv
-#' @param arqo Arquivo de saida: b_YYYY.csv
-#' @param focean Logical. Should I filter ocean MCSs?
-#' @param pregion Character. Indica o nome do shapefile da regiao a filtrar os scms
-#' @param psa Character. Indica o nome do shapefile da America do Sul
+#' @param arqi Character. Input filename. Ex: a_YYYY.csv
+#' @param arqo Character. Output filename. Ex: b_YYYY.csv
+#' @param focean Logical. Should I indicate the oceanic MCSs? TRUE by default.
+#' @param pregion Character. Set the name of the shapefile of the 
+#' region to filter the MCSs. Amazon basin by default.
+#' @param psa Character. Set the name of the shapefile for filtering 
+#' oceanic MCSs. South America contours by default
 #' @return data.frame
 #' @importFrom data.table fread fwrite `:=` fifelse as.data.table 
 #' @importFrom sf st_read st_intersects st_as_sf st_set_geometry st_crs
 #' @export
 #' @examples \dontrun{
-#' # Do not run Isso vai aparecer na documentação
+#' # Do not run
 #' filtra_b(arqi = "../a_200101.csv",
 #'          arqo = "../b_200101.csv")
 #' }
@@ -40,13 +42,13 @@ filtra_b <- function(arqi,
   
   sf::st_crs(ff) == sf::st_crs(region) # TRUE
   
-  # Passa ou nao pela region:
+  # Passa ou nao pela region of interest:
   x <- sf::st_intersects(ff, region, sparse = FALSE)
   
   ff$is_in_region <- x[, 1]
   ft <- data.table::as.data.table(sf::st_set_geometry(ff, NULL))
   # Obtem os IDs dos scms que em algum momento estiveram na region
-  cat("Obtem os IDs dos scms que em algum momento estiveram na region \n")
+  cat("ID's that were over the area of interest in any moment of the MCS lifespan \n")
   ids <- unique(ft[ft$is_in_region]$ID)
   print(paste0("MCSs over the Amazon basin: ", length(ids)))
   tt <- ft[ID %in% ids, ]
@@ -59,7 +61,7 @@ filtra_b <- function(arqi,
   
   # OCEANICOS ####
   if (focean == TRUE) {
-    cat("Inicio filtro dos SCMs oceanicos \n")
+    cat("Starting filtering Oceanic MCSs \n")
   } else {
     data.table::fwrite(tt,file = arqo, row.names = FALSE)
   }
