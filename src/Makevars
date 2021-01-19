@@ -1,0 +1,11 @@
+C_OBJS = init.o
+FT_OBJS = pcp.o tb.o
+
+all:
+	@$(MAKE) $(SHLIB)
+	@rm -f  *.o
+
+$(SHLIB): $(FT_OBJS) $(C_OBJS)
+
+init.o:  pcp.o tb.o
+ 
