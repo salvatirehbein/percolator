@@ -2,56 +2,55 @@
 % Please edit documentation in R/filtra_a.R
 \name{filtra_a}
 \alias{filtra_a}
-\title{Lê arqvuivos fam_*.csv, coloca o header e retorna arq a_YYYY.csv para
-ser filtrado pela bacia, curva e deslocamento.}
+\title{Filter MCSs by lifespan and area of genesis}
 \usage{
 filtra_a(
-  arqi,
-  arqo,
-  fonte,
-  variavel,
-  epoca,
-  header = FALSE,
+  ifile,
+  ofile,
+  classif = "N",
   filtra_time = 3,
   classifica_lifespan = 5.7
 )
 }
 \arguments{
-\item{arqi}{Arquivo de entrada. Se for "OLR" tera formato fam_YYYYMM.csv;
-Se for "PCP" fam_R12534354_YYYYMMDDHHMM.csv)}
+\item{ifile}{Character. Input filename. Generally as YYYYMM.txt}
 
-\item{arqo}{Arquivo de saida: a_YYYY.csv}
+\item{ofile}{Character. Output filename. Sugested: a_YYYYMM.csv}
 
-\item{fonte}{Fonte de dados: "CMORPH", "NICAM AMIP" ou "NICAM HigResMIP"}
+\item{filtra_time}{Numeric. Tells the minimum lifespan the remaining MCSs 
+should have. In general, they live 3 hours or more. This is the default value.}
 
-\item{variavel}{Qual variavel dos dados de entrada para o ForTraCC. 
-Escolher entre "PCP" (precipitacao) e "OLR"}
+\item{classifica_lifespan}{Numeric. Allows to classify between long- or 
+short-lived MCS. Require a threshold to identify the lifespans. 
+Default is 5 hours and 30 minutes.}
 
-\item{epoca}{Escolher entre "presente" ou "futuro"}
+\item{variable}{Character. Tells the filter which data was used for 
+tracking the cloud clusters by ForTraCC. Choose among: "Tb", "PCP", 
+or "OLR". It is important to set this properly, since each one of 
+these variables provide files with different fields.}
 
-\item{header}{Boolean. Default is FALSE. Has the arqi file a header?}
+\item{fonte}{Character. Source of the data. For instance: "Tb" for the
+MERG product, "IMERG", "CMORPH", "NICAM AMIP", "NICAM HighResMIP".
+It will be added as a field in the final data.frame. It is not 
+used for filtering.}
 
-\item{filtra_time}{SCMs devem ter no minimo filtra_time horas de duracao.
-Em geral, SCMs sao maiores ou iguais a 3 horas}
-
-\item{classifica_lifespan}{Limiar para classificar SCMs em short- ou long-lived}
+\item{period}{Character. Choose between "present" or "future". 
+It will be added as a field in the final data.frame. 
+It is not used for filtering.}
 }
 \value{
-data.frame
+data.table
 }
 \description{
-This function reads the fam_*.csv files,
-excludes the white spaces between the families,
-gives the names to the columns, creates IDs, and
-save the new data.frame.
+It is strongly recommended using filtra_a function before the 
+other filters. This function reads the files ouputed by fortran routine/function
+(YYYYMM.txt), creates IDs for each family of cloud cluster, creates lifespan, timeUTC,
+fonte, and period fields, filter data by lifespan above a given threshold, 
+classifies each family by its total lifespan, and then save the final dataset.
 }
 \examples{
 \dontrun{
-filtra_a(arqi = "200001.csv", 
-         arqo = "a_200001.csv",
-         fonte = "CMORPH",
-         variavel = "PCP",
-         epoca = "presente",
-         filtra_time = 3)
+filtra_a(ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/p_200101010000.txt", 
+         ofile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/a_200101010000.txt")
 }
 }

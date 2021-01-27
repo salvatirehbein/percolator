@@ -2,24 +2,36 @@
 % Please edit documentation in R/filtra_c.R
 \name{filtra_c}
 \alias{filtra_c}
-\title{Filtro pela curva de crescimento, onde a maxima extensao eh o pico da curva.
-Esta funcao tambem identifica as fases (genesis, maturation, dissipation) dos SCMs..}
+\title{Filter MCS by SIZE x TIME curve}
 \usage{
-filtra_c(arqi, arqo)
+filtra_c(ifile, ofile, threshold = 0.5)
 }
 \arguments{
-\item{arqi}{Arquivo de entrada: b_YYYY.csv}
+\item{ifile}{Character. Input filename. Generally as b_YYYYMM.txt}
 
-\item{arqo}{Arquivo de saida: c_YYYY.csv}
+\item{ofile}{Character. Output filename. Sugested: c_YYYYMM.txt}
+
+\item{threshold}{Numeric. Define the fraction of time that the system must have before 
+and after the maturation. Default is 0.5, so MCSs must have at least 50% of 
+the time increasing/decreasing before/after maturation.}
 }
 \value{
-data.frame
+data.table
 }
 \description{
-Esta funcao le os arquivos filtrados pela bacia e filtra pela curva de crescimento.
+This function filter MCSs by their SIZE x TIME curve.
+The pre_filter function, eliminates those families that have more than
+one phase at the same time. For instance, the maturation is the 1st or last
+timestep of the MCSs. 
+But, it doesn't guarantee that the genesis will be followed by a development 
+until the maturation, or decayment until dissipation. Which means fases can 
+happen one imediately another. 
+If you wish to discard those MCSs with short development before maturation and/or
+short decayment after maturation, please use this filter (filtra_c).
 }
 \examples{
 \dontrun{
-filtra_c(arqi = "../b_200101.csv")
+filtra_c(ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/b_200101010000.txt", 
+         ofile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/c_200101010000.txt")
 }
 }

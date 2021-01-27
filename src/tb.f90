@@ -1,12 +1,12 @@
-SUBROUTINE tb(filei, fileo) ! # nocov start
+SUBROUTINE tb(ifile, ofile) ! # nocov start
 
 IMPLICIT none
 
 
-CHARACTER*100 :: filei
-CHARACTER*100 :: fileo
+CHARACTER*100 :: ifile
+CHARACTER*100 :: ofile
 CHARACTER*5 :: variable
-INTEGER, PARAMETER :: nfam=40000,ntime=200
+INTEGER, PARAMETER :: nfam=35000,ntime=200
 INTEGER :: j,k,nn
 
 INTEGER :: family(nfam)
@@ -19,10 +19,11 @@ CHARACTER*3 :: classif(nfam)
 
 INTEGER :: sys(nfam,ntime)
 INTEGER :: size(nfam,ntime)
-INTEGER :: cbnum(nfam,ntime)
-INTEGER :: cbmed(nfam,ntime)        ! incluido
-INTEGER :: dir(nfam,ntime)          ! incluido
+INTEGER :: cbnum(nfam,ntime)        ! tb only
+INTEGER :: cbmed(nfam,ntime)        ! tb only
+INTEGER :: dir(nfam,ntime)
 INTEGER :: sysant(nfam,ntime)
+INTEGER :: falha(nfam,ntime)
 REAL :: xlat(nfam,ntime)
 REAL :: xlon(nfam,ntime)
 REAL :: time(nfam,ntime)         
@@ -34,25 +35,26 @@ REAL :: dtmin(nfam,ntime)
 REAL :: tmin9(nfam,ntime)
 REAL :: dtmin9(nfam,ntime)
 REAL :: vel(nfam,ntime)
-REAL :: incli(nfam,ntime)         ! incluido
-REAL :: ecce(nfam,ntime)          ! incluido
+REAL :: incli(nfam,ntime)         ! tb only
+REAL :: ecce(nfam,ntime)          ! tb only
 REAL :: tini(nfam,ntime)          
-REAL :: tfin(nfam,ntime)          ! incluido
+REAL :: tfin(nfam,ntime)          ! tb only
 CHARACTER*1 :: missing(nfam,ntime)
 CHARACTER*1 :: cla(nfam,ntime)
 
-! REAL :: ttime(nfam)
-! REAL :: deltax(nfam)
-! REAL :: deltay(nfam)
-! CHARACTER*1 :: lastimage(nfam)
-! CHARACTER*3 :: fim(nfam)
 
 variable="Tb"
-OPEN(5,file=filei,status='old')
-OPEN(10,file=fileo,status='unknown')
+OPEN(5,file=ifile,status='old')
+OPEN(10,file=ofile,status='unknown')
 
- PRINT *, "Attention!!! This routine must not be used &
-          with files with more than 40000 families"
+ PRINT *, "Attention!!! &
+          This routine must not be used in the case of more than 35000 families in a file"
+
+WRITE(10,700)"FAMILY YEAR MONTH DAY HOUR FIRST_MEMBER CLASSIF VAR MISSING &
+SYS YLAT XLON TIME SIZE DSIZE TMED DTMED TMIN DTMIN TMIN9 &
+DTMIN9 CBNUM CBMED VEL DIR INCLI ECCE TINI TFIN CLA SYSANT"
+
+700 FORMAT(a177)  
 
 DO k=1,nfam
 
@@ -60,7 +62,6 @@ DO k=1,nfam
                        day(k),hour(k),fmember(k),&
                        classif(k)
                            
-    PRINT *, "K = ",k
 
  200 FORMAT(7x,I5,9x,i4,8x,i2,6x,i2,6x,f5.2,14x,i4,9x,a3)
  
@@ -99,16 +100,15 @@ DO k=1,nfam
 
  150  CONTINUE
  
-! tentativa de ler o rodape 
-! 150 READ(5,900)ttime(k),deltax(k),deltay(k),&
-!                lastimage(k),fim(k)
-! 900 FORMAT(11x,f5.2,9x,f6.2,9x,f6.2,15x,1a,7x,3a)
-!     PRINT *, ttime(k),deltax(k),deltay(k)
-
- 
    nn=j-1
                 
    DO j=1,nn
+
+     IF (missing(k,j).eq.'*') THEN
+           falha(k,j)=1
+     ELSE 
+           falha(k,j)=0
+     END IF
 
      WRITE(10,800)family(k),            &
      year(k),                           &
@@ -118,7 +118,7 @@ DO k=1,nfam
      fmember(k),                        &
      classif(k),                        &
      variable,                          &
-     missing(k,j),                      & ! character
+     falha(k,j),                        & ! character
      sys(k,j),                          & ! integer
      xlat(k,j),                         & ! real
      xlon(k,j),                         & ! real
@@ -149,9 +149,9 @@ DO k=1,nfam
            6(f7.1,1x),i5,1x,i4,1x,f7.1,1x,i4,1x,f7.2,2x,& ! incli
            f4.2,1x,2(f5.1,1x),a2,1x,20(i4,1x))
 
-  800 FORMAT(7x,I5,9x,i4,8x,i2,6x,i2,6x,f5.2,14x,i4,9x,a3,2x,a5,2x,& ! header
-            a1,i4,2x,2(f7.2,1x),f6.2,1x,i6,1x,f8.1,1x,&              ! dsize
-            6(f7.1,1x),i5,1x,i4,1x,f7.1,1x,i4,1x,f7.2,2x,&           ! incli
+  800 FORMAT(i5,1x,i4,1x,i2,1x,i2,1x,f5.2,1x,i4,1x,a3,1x,a5,1x,& ! header
+            i1,i4,1x,2(f7.2,1x),f6.2,1x,i6,1x,f8.1,1x,&              ! dsize
+            6(f7.1,1x),i5,1x,i4,1x,f7.1,1x,i4,1x,f7.2,1x,&           ! incli
             f4.2,1x,2(f5.1,1x),a2,1x,20(i4,1x))                      !  
 
    ! Le as linhas em branco
@@ -162,6 +162,15 @@ END DO
 	
 250 CONTINUE
 
+PRINT *, ""
+PRINT *, "Last family = ", k-1
+PRINT *, ""
+PRINT *, "FOR YOUR SECURITY: "
+PRINT *, "PLEASE CERTIFY THAT YOUR INPUT FILE HAS LESS THAN 35000 FAMILIES."
+PRINT *, "Type 'tail ifile' at terminal"
+PRINT *, "if your input file has less than 35000 families, "
+PRINT *, "is everything okay!"
+PRINT *, ""
 
   CLOSE(5)
   CLOSE(10)	

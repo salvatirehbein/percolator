@@ -2,40 +2,46 @@
 % Please edit documentation in R/filtra_b.R
 \name{filtra_b}
 \alias{filtra_b}
-\title{Filtra SCMs que interagiram em alguma regiao de interesse. Por exemplo: bacia Amazonica.
-Tambem separa oceanicos e continentais.}
+\title{Filter MCSs by area of interest}
 \usage{
 filtra_b(
-  arqi,
-  arqo,
+  ifile,
+  ofile,
+  aoi,
   focean = TRUE,
-  pregion = system.file("extdata", "BACIA/bacia_amazonica_contorno.shp", package =
-    "fortracc.deal"),
-  psa = system.file("extdata", "SA/sa.shp", package = "fortracc.deal")
+  continental_shp = system.file("extdata", "SA/sa.shp", package = "percolator")
 )
 }
 \arguments{
-\item{arqi}{Arquivo de entrada: a_YYYY.csv}
+\item{ifile}{Character. Input filename. Ex: a_YYYY.csv}
 
-\item{arqo}{Arquivo de saida: b_YYYY.csv}
+\item{ofile}{Character. Output filename. Ex: b_YYYY.csv}
 
-\item{focean}{Logical. Should I filter ocean MCSs?}
+\item{aoi}{Character. Set the name of the shapefile of the 
+region to filter the MCSs. Amazon basin by default.}
 
-\item{pregion}{Character. Indica o nome do shapefile da regiao a filtrar os scms}
+\item{focean}{Logical. Should I indicate the oceanic MCSs? TRUE by default.}
 
-\item{psa}{Character. Indica o nome do shapefile da America do Sul}
+\item{continental_shp}{Character. Set the name of the shapefile for filtering 
+oceanic MCSs. South America contours by default.}
 }
 \value{
-data.frame
+data.table
 }
 \description{
-This function reads the output from read_family.R to filter MCSs
-Over the AMazon basin
+This function reads the output from filtra_a function, filter MCSs
+over an area of interest (for instance Amazon basin), classifies the MCSs by
+their origin (for instance oceanic or continental), and then returns the output 
+in data.table format or saved according to the ofile argument.
 }
 \examples{
 \dontrun{
-# Do not run Isso vai aparecer na documentação
-filtra_b(arqi = "../a_200101.csv",
-         arqo = "../b_200101.csv")
+# Do not run
+filtra_b(ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/a_200101010000.txt", 
+         ofile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/b_200101010000.txt",
+         aoi = system.file("extdata",  
+                           "BACIA/bacia_amazonica_contorno.shp",
+                           package = "percolator"), 
+         focean = FALSE)
 }
 }

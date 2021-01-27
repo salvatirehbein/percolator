@@ -52,6 +52,12 @@ variable="PCP"
 OPEN(5,file=filei,status='old')
 OPEN(10,file=fileo,status='unknown')
 
+WRITE(10,700)"FAMILY YEAR MONTH DAY HOUR FIRST_MEMBER CLASSIF VAR MISSING SYS YLAT &
+   XLON TIME SIZE DSIZE PMED DPMED PMAX DPMAX PMAX9 DPMAX9 FRAC VEL DIR &
+   TINI CLA SYS"
+
+700 FORMAT(a151)  
+
 DO k=1,nfam
 
  20 READ(5,200,end=250)family(k),year(k),month(k),&

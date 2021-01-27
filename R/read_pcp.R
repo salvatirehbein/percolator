@@ -8,21 +8,23 @@
 #' 
 #' This function calls a fortran subroutine for reading ForTraCC
 #' "fam" archives outuput and rewrite them in .csv format (or other).
+#' Due to memory limitation, this function cannot be used for cloud
+#' systems producing more than 200 lines in the body block.
 #' 
-#' @param filei character. Name of input file. Generally starts
+#' @param ifile character. Name of input file. Generally starts
 #' with "fam". Maximum of 100 characters.
-#' @param fileo character. Name of output file. For running the other filters,
+#' @param ofile character. Name of output file. For running the other filters,
 #' it must be "csv" format. Maximum of 100 characters.
 #' @return character
 #' @useDynLib percolator
 #' @export
 #' @examples \dontrun{
-#' read_pcp(filei = "/home/amanda/Documents/filtra_scms/TESTE/pcp_fam_20001231.txt",
-#'          fileo = "/home/amanda/Documents/filtra_scms/TESTE/pcp_out_20001231.txt")
+#' read_pcp(ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/fam_R12534354_200201010000.txt",
+#'          ofile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/APAGAR.txt")
 #' }
-read_pcp <- function(filei, fileo) {
+read_pcp <- function(ifile, ofile) {
   out <- .Fortran("pcp",
-                  filei = as.character(filei),
-                  fileo = as.character(fileo))
+                  ifile = as.character(ifile),
+                  ofile = as.character(ofile))
   return(out)
 }

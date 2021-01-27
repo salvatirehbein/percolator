@@ -10,22 +10,20 @@
 #' "fam" archives outuput and rewrite them in .csv format (or other).
 #' This routine must not be used with files with more than 40000 families!!!
 #' 
-#' @param filei character. Name of input file. Generally starts
+#' @param ifile character. Name of input file. Generally starts
 #' with "fam". Maximum of 100 characters.
-#' @param fileo character. Name of output file. For running the other filters,
+#' @param ofile character. Name of output file. For running the other filters,
 #' it must be "csv" format. Maximum of 100 characters.
 #' @return character
 #' @useDynLib percolator
 #' @export
 #' @examples \dontrun{
-#' read_tb(filei = "/home/amanda/Documents/filtra_scms/TESTE/tb_fam1403_s2.txt",
-#'         fileo = "/home/amanda/Documents/filtra_scms/TESTE/tb_out.txt")
+#' read_tb(ifile = "/home/amanda/Documents/filtra_scms/TESTE/tb_fam1403_s2.txt",
+#'         ofile = "/home/amanda/Documents/filtra_scms/TESTE/tb_out.txt")
 #' }
-read_tb <- function(filei, fileo) {
+read_tb <- function(ifile, ofile) {
   out <- .Fortran("tb",
-                  filei = as.character(filei),
-                  fileo = as.character(fileo))
-  warning("Attention!!! This routine must not be used 
-          with files with more than 40000 families!!!")
+                  ifile = as.character(ifile),
+                  ofile = as.character(ofile))
   return(out)
 }

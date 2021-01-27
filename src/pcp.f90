@@ -1,12 +1,10 @@
-SUBROUTINE pcp(filei, fileo) ! # nocov start
-
-IMPLICIT none
+SUBROUTINE pcp(ifile, ofile) ! # nocov start
 
 
-CHARACTER*100 :: filei
-CHARACTER*100 :: fileo
+CHARACTER*100 :: ifile
+CHARACTER*100 :: ofile
 CHARACTER*5 :: variable
-INTEGER, PARAMETER :: nfam=100000,ntime=200
+INTEGER, PARAMETER :: nfam=100000,ntime=201
 INTEGER :: j,k,nn
 
 INTEGER :: family(nfam)
@@ -21,6 +19,7 @@ INTEGER :: sys(nfam,ntime)
 INTEGER :: size(nfam,ntime)
 INTEGER :: sysant(nfam,ntime)
 INTEGER :: dir(nfam,ntime)
+INTEGER :: falha(nfam,ntime)
 REAL :: xlat(nfam,ntime)
 REAL :: xlon(nfam,ntime)
 REAL :: elapsed_time(nfam,ntime)
@@ -39,24 +38,25 @@ REAL :: elapsed_time_begin(nfam,ntime)
 CHARACTER*1 :: missing(nfam,ntime)
 CHARACTER*1 :: cla(nfam,ntime)
 
-! REAL :: ttime(nfam)
-! REAL :: deltax(nfam)
-! REAL :: deltay(nfam)
-! CHARACTER*1 :: lastimage(nfam)
-! CHARACTER*3 :: fim(nfam)
-
 variable="PCP"
-OPEN(5,file=filei,status='old')
-OPEN(10,file=fileo,status='unknown')
+OPEN(5,file=ifile,status='old')
+OPEN(10,file=ofile,status='unknown')
+
+PRINT *, "Attention!!! &
+          This routine must not be used in the case of more than 200 lines in the body block"
+
+WRITE(10,700)"FAMILY YEAR MONTH DAY HOUR FIRST_MEMBER CLASSIF VAR MISSING SYS YLAT &
+   XLON TIME SIZE DSIZE PMED DPMED PMAX DPMAX PMAX9 DPMAX9 FRAC VEL DIR &
+   TINI CLA SYSANT"
+
+700 FORMAT(a151)  
 
 DO k=1,nfam
 
  20 READ(5,200,end=250)family(k),year(k),month(k),&
                        day(k),hour(k),fmember(k),classif(k)
                            
-    PRINT *, "Family = ",k
-
- 200 FORMAT(7x,I10,9x,i4,8x,i2,6x,i2,6x,f5.2,14x,i4,9x,a3)
+ 200 FORMAT(7x,I5,9x,i4,8x,i2,6x,i2,6x,f5.2,14x,i4,9x,a3)
  
      READ(5,1113)
        
@@ -88,17 +88,16 @@ DO k=1,nfam
    END DO
      
  150  CONTINUE
- 
-! tentativa de ler o rodape 
-! 150 READ(5,900)ttime(k),deltax(k),deltay(k),&
-!                lastimage(k),fim(k)
-! 900 FORMAT(11x,f5.2,9x,f6.2,9x,f6.2,15x,1a,7x,3a)
-!     PRINT *, ttime(k),deltax(k),deltay(k)
 
- 
    nn=j-1
                 
    DO j=1,nn
+
+     IF (missing(k,j).eq.'*') THEN
+           falha(k,j)=1
+     ELSE 
+           falha(k,j)=0
+     END IF
 
      WRITE(10,800)family(k),            & ! integer
      year(k),                           & ! integer
@@ -108,7 +107,7 @@ DO k=1,nfam
      fmember(k),                        & ! integer
      classif(k),                        & ! character
      variable,                          & ! character
-     missing(k,j),                      & ! character
+     falha(k,j),                        & ! character
      sys(k,j),                          & ! integer
      xlat(k,j),                         & ! real
      xlon(k,j),                         & ! real
@@ -132,11 +131,11 @@ DO k=1,nfam
 	
 
   749 FORMAT(a1,i4,2x,2(f7.2,1x),f6.2,1x,(i6,1x),(f8.1,1x),&
-           6(f7.1,1x),f5.2,1x,f7.1,1x,i4,f6.2,1x,1a,1x,20(i4,1x))
+             6(f7.1,1x),f5.2,1x,f7.1,1x,i4,1x,f6.2,1x,1a,1x,20(i4,1x))
 
-  800 FORMAT(I10,2x,i4,2x,i2,2x,i2,2x,f5.2,2x,i4,2x,a3,2x,a5,2x,&
-            a1,i4,2x,2(f7.2,1x),f6.2,1x,(i6,1x),(f8.1,1x),&
-            6(f7.1,1x),f5.2,1x,f7.1,1x,i4,f6.2,1x,1a,1x,20(i4,1x))
+  800 FORMAT(I5,1x,i4,1x,i2,1x,i2,1x,f5.2,1x,i4,1x,a3,1x,a5,1x,&    ! header + variable
+             i1,1x,i4,1x,2(f7.2,1x),f6.2,1x,(i6,1x),(f8.1,1x),&     ! ateh DSIZE
+             6(f7.1,1x),f5.2,1x,f7.1,1x,i4,1x,f6.2,1x,1a,1x,20(i4,1x))
 
    ! Le as linhas em branco
    READ(5,*) 
@@ -146,10 +145,11 @@ END DO
 	
 250 CONTINUE
 
+PRINT *, "Last family = ", k-1
 
-  CLOSE(5)
-  CLOSE(10)	
-	
+CLOSE(5)
+CLOSE(10)	
+
 
 RETURN
 END   ! # nocov end

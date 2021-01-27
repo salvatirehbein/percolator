@@ -1,0 +1,28 @@
+Mesoscale convective systems (MCSs) are very large and complex cloud system that causes huge amount of precipitation and severe weather globally. They can be identified and tracked using algorithms, such as the Forecasting and Tracking the evolution of Cloud Clustes (ForTraCC; Machado et al., 1998; Vila et al., 2008).
+
+ForTraCC ingests matrix with brightness temperature from satellite images, precipitation, or reflectivity from weather radar for the identification and tracking of cloud clusters. It returns a text file with complex structure for reading in R, for instance, with two headers by family of cloud clusters, a body that contains the majority information, and a tail. Each block with all the information above (headers, body, and tail) describes one family, indicated in the first header. Each line of the body contain the cloud cluster information regarding one timestamp.
+
+Due to the complexity of the block, the functions read_pcp and read_tb were created. DESCREVER ESSAS DUAS FUNCOES:
+
+This package organizes a serie of functions for filtering ForTraCC data, allowing to obtain MCSs. 
+
+The explanations regarding their use are better described by Rehbein et al. (2017;2019), and summarized below. These functions must be runned in the following order. There are a punch of options that allows one passing the functions without filter anything. 
+
+1) filtra_a: filter MCSs according their genesis (new MCSs or from a split, for instance) and lifespan.
+
+2) filtra_b: filter MCSs by the area of interest (aoi) and classify them among continental or oceanic.
+
+3) filtra_c: filter MCSs by their extention and lifecycle. As in Sakamoto et al. (2011), only those MCSs that had a spontaneous genesis, followed by growing until their maturation (largest extention), and decreasing extention are selected. This allows studying MCSs along their lifecycles. 
+
+4) filtra_d: filter very long/not real distances. In some ocasions, MCSs that are not related are conected among themselves. This function calculates the distances between one timestep and other, and then filter those above an unrealistic threshold.
+
+References:
+- Machado et al. (1998)
+
+- Rehbein et al. (2017)
+
+- Rehbein et al. (2019)
+
+- Sakamoto et al. (2011)
+
+- Vila et al. (2008)

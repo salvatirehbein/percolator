@@ -3,10 +3,22 @@ NEWS
 
 ## TODO
 
+- checar/finalizar filtra_d
+- filtrar em pre-filter os SIZEs que o Fortracc deixou passar?
+- checar filtra_c
 - filtra_c usar funcao em C++ para calc distancias
-- Documentar em ingles
-- Adicionar exemplos
+- Revisar Ingles e terminar de traduzir
 
+### percolator 0.4.0 (Release date: 2021-01-27)
+- Add function pre_filter that includes the fields necessary to
+  the other filters. In this sense, one can run any filter in the
+  file after read_tb or read_pcp.
+- Add classif filter in filtra_a in order to select the new systems, 
+  etc. This was the major fault in the filters before.
+- Updated filtra_a, filtra_b, and filtra_c in order to be more
+  eficient and doesn't depend one each other.
+- Add examples and documentation in English
+  
 ### percolator 0.3.0 (Release date: 2021-01-19)
 - Change package name from fortracc.deal to percolator.
 - Added fortran subroutines (src/pcp.f90 and src/tb.f90) for
