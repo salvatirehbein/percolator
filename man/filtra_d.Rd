@@ -2,26 +2,37 @@
 % Please edit documentation in R/filtra_d.R
 \name{filtra_d}
 \alias{filtra_d}
-\title{Calculate and filter MCSs displacement}
+\title{Filter by maximum distance and minimum size (ForTraCC correction type filter)}
 \usage{
-filtra_d(ifile, ofile, dist_max = 300, coords = c("XLON", "YLAT"))
+filtra_d(ifile, ofile, min_size, dist_max = 300, coords = c("XLON", "YLAT"))
 }
 \arguments{
-\item{ifile}{Arquivo de entrada: c_YYYY.csv}
+\item{ifile}{Character. Input filename. Generally as c_YYYYMM.txt}
 
-\item{ofile}{Arquivo de saida: d_YYYY.csv}
+\item{ofile}{Character. Output filename. Sugested: d_YYYYMM.txt}
 
-\item{dist_max}{Maxima distancia permitida em km entre um passo de tempo e outro.
-No mestrado usei 300 km a cada 30 min.}
+\item{min_size}{Numeric. This is the size threshold in pixels to exclude MCSs 
+that ForTraCC erroneously inserted in the fam_ final files.}
 
-\item{coords}{Nomes das colunas das coordenas longitude e latitude (nesta ordem)}
+\item{dist_max}{Numeric. Maximum distance in km allowed between two consecutive timesteps.
+ForTraCC sometimes connects two no related cloud systems. This filter remove the 
+entire family when the distance between two consecutive timesteps are larger than 
+the threshold defined. By default it is 300 km (recommended for 30 min timesteps)}
+
+\item{coords}{Vector of strings with the coordinates (longitude, latitude) field names.
+By default it is c("XLON", "YLAT").}
 }
 \value{
 data.frame
 }
 \description{
-Filtra pela distancia entre um timestep e outro. Tambem
- calcula deslocamento total de cada SCM.
+ForTraCC is an automated method for tracking cloud systems. Two little deficiencies
+were found for tracking with very large datasets for long periods. This function
+is designed to eliminated the families that were erroneously included in the fam file.
+In this sense, this filter calculates MCSs displacement between consecutive timestamps, 
+filter out familieswith larger surrealistic displacements between two consecutive 
+timesteps, and filter out families with size lower than the threshold 
+predefined in fortracc_input.
 }
 \examples{
 \dontrun{

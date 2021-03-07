@@ -3,13 +3,18 @@ NEWS
 
 ## TODO
 
-- checar/finalizar filtra_d
-- filtrar em pre-filter os SIZEs que o Fortracc deixou passar?
+- adicionar uma opcao para digitar a fonte caso esquecer na funcao pre_filter
 - checar filtra_c
 - filtra_c usar funcao em C++ para calc distancias
 - Revisar Ingles e terminar de traduzir
 
+### percolator 0.4.1 (Release date: 2021-03-06)
+- Correct filtra_b classification of the oceanic and continental MCSs.
+
 ### percolator 0.4.0 (Release date: 2021-01-27)
+- Translated UTC function to English
+- Add a filter in filtra_d function for filter by the minimum size 
+  the MCSs should have. 
 - Add function pre_filter that includes the fields necessary to
   the other filters. In this sense, one can run any filter in the
   file after read_tb or read_pcp.

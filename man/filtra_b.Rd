@@ -9,7 +9,7 @@ filtra_b(
   ofile,
   aoi,
   focean = TRUE,
-  continental_shp = system.file("extdata", "SA/sa.shp", package = "percolator")
+  continental_shp = system.file("extdata", "SA_SEM_FOZ/sa.shp", package = "percolator")
 )
 }
 \arguments{
@@ -18,7 +18,7 @@ filtra_b(
 \item{ofile}{Character. Output filename. Ex: b_YYYY.csv}
 
 \item{aoi}{Character. Set the name of the shapefile of the 
-region to filter the MCSs. Amazon basin by default.}
+region to filter the MCSs.}
 
 \item{focean}{Logical. Should I indicate the oceanic MCSs? TRUE by default.}
 
@@ -37,11 +37,10 @@ in data.table format or saved according to the ofile argument.
 \examples{
 \dontrun{
 # Do not run
-filtra_b(ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/a_200101010000.txt", 
-         ofile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/b_200101010000.txt",
+filtra_b(ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/a_200101010000.csv", 
          aoi = system.file("extdata",  
                            "BACIA/bacia_amazonica_contorno.shp",
                            package = "percolator"), 
-         focean = FALSE)
+         focean = TRUE)
 }
 }

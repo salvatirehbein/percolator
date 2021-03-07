@@ -1,7 +1,7 @@
 Package: percolator
 Type: Package
 Title: Tools for ForTraCC
-Version: 0.3.1
+Version: 0.4.1
 Date: 2019-01-09
 Authors@R: c(person("Amanda", "Rehbein", 
   role = c("aut"), email = "amanda.rehbein@iag.usp.br", 

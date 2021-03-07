@@ -2,33 +2,33 @@
 % Please edit documentation in R/time_UTC.R
 \name{UTC}
 \alias{UTC}
-\title{Lê arquivos output do read_family.R e filtra pela bacia,
-separando por oceano e continente}
+\title{Calculate the time in UTC for each timestep of the MCSs}
 \usage{
-UTC(ANO, MES, DIA, HORAINI, TIME)
+UTC(YEAR, MONTH, DAY, HOUR, TIME)
 }
 \arguments{
-\item{ANO}{ano}
+\item{YEAR}{String. Year field name.}
 
-\item{MES}{mes}
+\item{MONTH}{String. Month field name.}
 
-\item{DIA}{dia}
+\item{DAY}{String. Day field name.}
 
-\item{HORAINI}{hora inicial do SCM em UTC}
+\item{HOUR}{String. Hour of genesis field name.}
 
-\item{TIME}{horas passadas apos o inicio do sistema. Ex: 0, 0.5, 1.0, 1.5}
+\item{TIME}{String. TIME counter lifespan field. E.g.: 0, 0.5, 1.0, 1.5.}
 }
 \value{
 data.frame
 }
 \description{
-This function reads the output from read_family.R to filter MCSs
-Over the AMazon basin
+Calculate the time in UTC for each timestep of the MCSs
 }
 \examples{
 \dontrun{
-# Do not run Isso vai aparecer na documentação
-head(df)
-hist(df$DURACAO) #
+dt$timeUTC <- UTC(YEAR = dt$YEAR,
+                  MONTH = dt$MONTH,
+                  DAY = dt$DAY,
+                  HOUR = dt$HOUR,
+                  TIME = dt$TIME)
 }
 }

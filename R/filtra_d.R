@@ -1,17 +1,26 @@
-#' Calculate and filter MCSs displacement
+#' Filter by maximum distance and minimum size (ForTraCC correction type filter)
+#' 
+#' @description ForTraCC is an automated method for tracking cloud systems. Two little deficiencies
+#' were found for tracking with very large datasets for long periods. This function
+#' is designed to eliminated the families that were erroneously included in the fam file.
+#' In this sense, this filter calculates MCSs displacement between consecutive timestamps, 
+#' filter out familieswith larger surrealistic displacements between two consecutive 
+#' timesteps, and filter out families with size lower than the threshold 
+#' predefined in fortracc_input.
 #'
-#' @description Filtra pela distancia entre um timestep e outro. Tambem
-#'  calcula deslocamento total de cada SCM.
-#'
-#' @param ifile Arquivo de entrada: c_YYYY.csv
-#' @param ofile Arquivo de saida: d_YYYY.csv
-#' @param dist_max Maxima distancia permitida em km entre um passo de tempo e outro.
-#' No mestrado usei 300 km a cada 30 min.
-#' @param coords Nomes das colunas das coordenas longitude e latitude (nesta ordem)
+#' @param ifile Character. Input filename. Generally as c_YYYYMM.txt
+#' @param ofile Character. Output filename. Sugested: d_YYYYMM.txt
+#' @param min_size Numeric. This is the size threshold in pixels to exclude MCSs 
+#' that ForTraCC erroneously inserted in the fam_ final files.
+#' @param dist_max Numeric. Maximum distance in km allowed between two consecutive timesteps.
+#' ForTraCC sometimes connects two no related cloud systems. This filter remove the 
+#' entire family when the distance between two consecutive timesteps are larger than 
+#' the threshold defined. By default it is 300 km (recommended for 30 min timesteps)
+#' @param coords Vector of strings with the coordinates (longitude, latitude) field names.
+#' By default it is c("XLON", "YLAT").
 #' @return data.frame
-#' @importFrom data.table fread
-#' @importFrom utils write.csv
-#' @importFrom geosphere distm distHaversine
+#' @importFrom data.table fread fwrite
+#' @importFrom geosphere distHaversine
 #' @export
 #' @examples \dontrun{
 #' filtra_d(ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/c_200101010000.txt", 
@@ -19,110 +28,66 @@
 #' }
 filtra_d <- function(ifile,
                      ofile,
+                     min_size,
                      dist_max = 300,
                      coords = c("XLON", "YLAT")) {
   cat("Starting filtra_d... \n")
   
   x <- data.table::fread(ifile)
   
-  message("Calculating distances... (This will take some minutes)")
-  
-  lx <- split(x, x$ID)
-  dx <- lapply(1:length(lx), function(i){
-    data.frame(distkm = geosphere::distHaversine(
-      p1 = cbind(lx[[i]]$XLON,lx[[i]]$YLAT)[1,], 
-      p2 = cbind(lx[[i]]$XLON,lx[[i]]$YLAT)[2,]
-    )/1000,
-    ID = lx[[i]]$ID)
-  })
-  dx <- data.table::rbindlist(dx)
-  
-  # preciso tirar os IDS de x que tem distks > dist_max em dx
-  
-  
-  
-  message("Done!")
-  
-  
-  
-  # ANTIGO
-  df <- data.table::fread(ifile)
-  ifile <- as.data.frame(df)
-  x_ini <- ifile[[coords[1]]]
-  y_ini <- ifile[[coords[2]]]
+  message("Calculating distances... (This may take some minutes)")
+  x_ini <- x[[coords[1]]]
+  y_ini <- x[[coords[2]]]
   x_fim <- x_ini[c(2:length(x_ini), NA)]
   y_fim <- y_ini[c(2:length(y_ini), NA)]
-
-
-  df2 <- data.frame(ID = df$ID,
-                    # fase = df$phase,
+  
+  df2 <- data.frame(ID = x$ID,
+                    phase = x$phase,
                     x_ini,
                     y_ini,
                     x_fim,
                     y_fim)
-
+  
   # Calculates the distance between coordinates in each timestep
   for (i in 1:nrow(df2)){
-    df2$distm[i] <- geosphere::distm(c(df2$x_ini[i], df2$y_ini[i]),
-                                     c(df2$x_fim[i], df2$y_fim[i]),
-                                     fun = geosphere::distHaversine)
+    df2$distkm[i] <- geosphere::distHaversine(c(df2$x_ini[i], df2$y_ini[i]),
+                                             c(df2$x_fim[i], df2$y_fim[i]))/1000
   }
-
-  # Set the last timestep of each ID to zero, because
+  # Set the last timestep of each ID to NA manually, because
   # there is no displacement in the last timestep.
-  df2$distkm <- ifelse(df2$fase == "dissipation" & !is.na(df2$fase),
-                       0,
-                       (df2$distm)/1000)
-  df$dist_km <- df2$distkm
-
-  # Filtrar
-  df$criteria_length <- ifelse(as.numeric(df$dist_km) > dist_max,
-                               "BAD", "GOOD")
-  IDS <- df[df$criteria_length %in% "BAD", ]$ID
-
+  df2$distkm <- ifelse(df2$phase == "dissipation" & !is.na(df2$phase),
+                       NA,
+                       df2$distkm)
+  x$dist_km <- df2$distkm
+  
+  # filter out IDs that with dist_km >  dist_max in at least one timestep of the MCSs
+  x$criteria_length <- ifelse(as.numeric(x$dist_km) > dist_max,
+                              "BAD", "GOOD")
+  IDS <- x[x$criteria_length %in% "BAD", ]$ID
+  
   if (length(IDS) == 0) {
-    dff <- df
+    df <- x
   } else {
-    dff <- df[!df$ID%in%IDS,]
+    df <- x[!x$ID%in%IDS,]
   }
-
-  dff$criteria_length <- NULL
-
-  nrow(dff); nrow(df); nrow(dff) == nrow(df)
-
-  # Deslocamento: selecionar 1 e ultimo passo de tempo por id
-  dd <- dff[dff$fase %in% c("genesis", "dissipation"), ]
-
-  x_ini <- dd[[coords[1]]]
-  y_ini <- dd[[coords[2]]]
-  x_fim <- x_ini[c(2:length(x_ini), NA)]
-  y_fim <- y_ini[c(2:length(y_ini), NA)]
-
-  dd1 <- data.frame(ID = dd$ID,
-                    fase = dd$fase,
-                    x_ini,
-                    y_ini,
-                    x_fim,
-                    y_fim)
-  dd2 <- dd1[dd1$fase != "dissipation" |  is.na(dd1$fase) , ]
-  nrow(dd2) == length(unique(dff$ID)) # TRUE
-
-  for (i in 1:nrow(dd2)){
-    dd2$desloc_m[i] <- geosphere::distm(c(dd2$x_ini[i], dd2$y_ini[i]),
-                                        c(dd2$x_fim[i], dd2$y_fim[i]),
-                                        fun = geosphere::distHaversine)
-  }
-
-  dd2$desloc_km <- (dd2$desloc_m)/1000
-  dd3 <- data.frame(ID = dd2$ID,
-                    desloc_km = dd2$desloc_km)
-
-  ddf <- merge(as.data.frame(dff), dd3, by = "ID", all.x = TRUE)
+  
+  df$criteria_length <- NULL
+  message("Finished.")
+  
+  # Filter by size
+  message("Now, let's filter by size...")
+  
+  SIZE <- NULL
+  IDs_out <- unique(df[SIZE < min_size]$ID)
+  
+  ID <- NULL 
+  dff <- df[!ID%in%IDs_out, ]
+  
   
   # Output:
   if(!missing(ofile)){
-    data.table::fwrite(x = ddf, file = ofile, quote = T, row.names = F)
+    data.table::fwrite(x = dff, file = ofile, quote = T, row.names = F)
   } else {
-    return(ddf)
+    return(dff)
   }
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/filtra_c.R
 \name{filtra_c}
 \alias{filtra_c}
-\title{Filter MCS by SIZE x TIME curve}
+\title{Filter MCS by SIZE x TIME curve. Don't use it anymore.}
 \usage{
 filtra_c(ifile, ofile, threshold = 0.5)
 }

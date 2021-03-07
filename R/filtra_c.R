@@ -1,4 +1,4 @@
-#' Filter MCS by SIZE x TIME curve
+#' Filter MCS by SIZE x TIME curve. Don't use it anymore.
 #'
 #' @description This function filter MCSs by their SIZE x TIME curve.
 #' The pre_filter function, eliminates those families that have more than
@@ -9,7 +9,6 @@
 #' happen one imediately another. 
 #' If you wish to discard those MCSs with short development before maturation and/or
 #' short decayment after maturation, please use this filter (filtra_c).
-
 #'
 #' @param ifile Character. Input filename. Generally as b_YYYYMM.txt
 #' @param ofile Character. Output filename. Sugested: c_YYYYMM.txt

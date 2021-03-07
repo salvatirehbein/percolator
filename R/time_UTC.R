@@ -1,43 +1,43 @@
-#' Lê arquivos output do read_family.R e filtra pela bacia,
-#' separando por oceano e continente
+#' Calculate the time in UTC for each timestep of the MCSs
 #'
-#' @description This function reads the output from read_family.R to filter MCSs
-#' Over the AMazon basin
+#' @description Calculate the time in UTC for each timestep of the MCSs
 #'
-#' @param ANO ano
-#' @param MES mes
-#' @param DIA dia
-#' @param HORAINI hora inicial do SCM em UTC
-#' @param TIME horas passadas apos o inicio do sistema. Ex: 0, 0.5, 1.0, 1.5
+#' @param YEAR String. Year field name.
+#' @param MONTH String. Month field name.
+#' @param DAY String. Day field name.
+#' @param HOUR String. Hour of genesis field name. 
+#' @param TIME String. TIME counter lifespan field. E.g.: 0, 0.5, 1.0, 1.5.
 #' @return data.frame
 #' @export
 #' @examples \dontrun{
-#' # Do not run Isso vai aparecer na documentação
-#' head(df)
-#' hist(df$DURACAO) #
+#' dt$timeUTC <- UTC(YEAR = dt$YEAR,
+#'                   MONTH = dt$MONTH,
+#'                   DAY = dt$DAY,
+#'                   HOUR = dt$HOUR,
+#'                   TIME = dt$TIME)
 #' }
-UTC <- function(ANO, MES, DIA, HORAINI, TIME) {
+UTC <- function(YEAR, MONTH, DAY, HOUR, TIME) {
   TIMEv2 <- round(TIME, 1)
-  HORAINIv2 <- round(HORAINI, 1)
-  HORAINIv3 <- ifelse((HORAINIv2 %% 1) > 0.4, #avoid ring of hell!!
+  HOURv2 <- round(HOUR, 1)
+  HOURv3 <- ifelse((HOURv2 %% 1) > 0.4, #avoid ring of hell!!
                       # se usamos >0.3, vai pegar o valor 0.3000000001
-                      round(HORAINIv2),
-                      HORAINIv2)
-  timeINI <-  paste0(ANO,
+                      round(HOURv2),
+                      HOURv2)
+  timeINI <-  paste0(YEAR,
                      "-",
-                     ifelse(MES < 10,
-                            paste0("0", MES),
-                            MES),
+                     ifelse(MONTH < 10,
+                            paste0("0", MONTH),
+                            MONTH),
                      "-",
-                     ifelse(DIA < 10,
-                            paste0("0", DIA),
-                            DIA),
+                     ifelse(DAY < 10,
+                            paste0("0", DAY),
+                            DAY),
                      " ",
-                     ifelse(trunc(HORAINIv3) < 10,
-                            paste0("0", trunc(HORAINIv3)),
-                            trunc(HORAINIv3)),
+                     ifelse(trunc(HOURv3) < 10,
+                            paste0("0", trunc(HOURv3)),
+                            trunc(HOURv3)),
                      ":",
-                     ifelse((HORAINIv3 %% 1) != 0,
+                     ifelse((HOURv3 %% 1) != 0,
                             "30:00",
                             "00:00"))
   timeINI <- as.POSIXct(x = timeINI,

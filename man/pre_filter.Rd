@@ -2,7 +2,7 @@
 % Please edit documentation in R/pre_filter.R
 \name{pre_filter}
 \alias{pre_filter}
-\title{Performs a pre-filter for}
+\title{Performs a pre-filter for filtering fortracc output}
 \usage{
 pre_filter(ifile, ofile, fonte, period)
 }
@@ -25,7 +25,8 @@ data.table
 }
 \description{
 This function performs a pre-filter after adding essentials fields
-to the data. It reads the files ouputed by fortran routine/function
+to the data. It should be used after read_pcp.R or read_tb.R and before filtra_a.R.
+It reads the files outputed by fortran routine/function
 (YYYYMM.txt); give the fonte and period for each family; creates IDs for each family,
 obtain their lifespan, timeUTC, phases, distances, and total displacement; 
 filter data eliminating families in which the genesis, maturation, and/or dissipation 

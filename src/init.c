@@ -11,12 +11,12 @@ extern void F77_NAME(pcp)(void *, void *);
 extern void F77_NAME(tb)(void *, void *);
 
 static const R_FortranMethodDef FortranEntries[] = {
-  {"pcp", (DL_FUNC) &F77_NAME(pcp), 2},
-  {"tb",  (DL_FUNC) &F77_NAME(tb),  2},
+  {"pcp",            (DL_FUNC) &F77_NAME(pcp),            2},
+  {"tb",             (DL_FUNC) &F77_NAME(tb),             2},
   {NULL, NULL, 0}
 };
 
-void R_init_fortracc_deal(DllInfo *dll)
+void R_init_percolator(DllInfo *dll)
 {
   R_registerRoutines(dll, NULL, NULL, FortranEntries, NULL);
   R_useDynamicSymbols(dll, FALSE);

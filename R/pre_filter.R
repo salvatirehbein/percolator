@@ -1,7 +1,8 @@
-#' Performs a pre-filter for 
+#' Performs a pre-filter for filtering fortracc output
 #'
 #' @description This function performs a pre-filter after adding essentials fields
-#' to the data. It reads the files ouputed by fortran routine/function
+#' to the data. It should be used after read_pcp.R or read_tb.R and before filtra_a.R.
+#' It reads the files outputed by fortran routine/function
 #' (YYYYMM.txt); give the fonte and period for each family; creates IDs for each family,
 #' obtain their lifespan, timeUTC, phases, distances, and total displacement; 
 #' filter data eliminating families in which the genesis, maturation, and/or dissipation 
@@ -31,7 +32,7 @@ pre_filter <- function(ifile,
                        ofile,
                        fonte,
                        period) {
-  
+
   periods <- c("present", "future")
   if(missing(period)){
     choice <- utils::menu(periods, title="Choose var")
@@ -70,11 +71,11 @@ pre_filter <- function(ifile,
   message("Done!")
   # Add Time UTC ####
   message("Obtaining time in UTC...")
-  dt$timeUTC <- UTC(ANO = dt$YEAR,
-                    MES = dt$MONTH,
-                    DIA = dt$DAY,
-                    HORAINI = dt$HOUR,
-                    TIME = dt$TIME)
+  dt$timeUTC <- UTC(YEAR = dt$YEAR,
+                     MONTH = dt$MONTH,
+                     DAY = dt$DAY,
+                     HOUR = dt$HOUR,
+                     TIME = dt$TIME)
   message("Done!")
   
   # Add fonte ####
