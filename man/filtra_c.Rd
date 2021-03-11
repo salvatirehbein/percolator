@@ -2,7 +2,7 @@
 % Please edit documentation in R/filtra_c.R
 \name{filtra_c}
 \alias{filtra_c}
-\title{Filter MCS by SIZE x TIME curve. Don't use it anymore.}
+\title{Filter MCS by SIZE x TIME curve. Deprecated.}
 \usage{
 filtra_c(ifile, ofile, threshold = 0.5)
 }
@@ -31,7 +31,8 @@ short decayment after maturation, please use this filter (filtra_c).
 }
 \examples{
 \dontrun{
-filtra_c(ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/b_200101010000.txt", 
+ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/b_200101010000.csv"
+filtra_c(ifile, 
          ofile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/c_200101010000.txt")
 }
 }

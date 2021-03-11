@@ -1,4 +1,4 @@
-#' Filter MCS by SIZE x TIME curve. Don't use it anymore.
+#' Filter MCS by SIZE x TIME curve. Deprecated.
 #'
 #' @description This function filter MCSs by their SIZE x TIME curve.
 #' The pre_filter function, eliminates those families that have more than
@@ -19,7 +19,8 @@
 #' @importFrom data.table fread rbindlist fwrite
 #' @export
 #' @examples \dontrun{
-#' filtra_c(ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/b_200101010000.txt", 
+#' ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/b_200101010000.csv"
+#' filtra_c(ifile, 
 #'          ofile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/c_200101010000.txt")
 #' }
 filtra_c <- function(ifile,
@@ -28,6 +29,16 @@ filtra_c <- function(ifile,
   message("Starting filter c... \n")
   
   dt <- data.table::fread(ifile)
+
+  ###############################################
+  # par(mfrow = c(1, 3))
+  # for(i in c(3, 5, 6)) dt[total_time ==3][ID %in% unique(ID)[i], plot(TIME, SIZE, type = "b", pch = 16, main = ID[i])]
+  # dt <- dt[total_time ==3][ID %in% unique(ID)[c(3,5,6)]]
+  # i = 2
+  # dt[total_time ==3][ID %in% unique(ID)[i], plot(TIME, SIZE, type = "b", pch = 16, main = ID[i])]
+  ###############################################
+  
+  
   
   # 1) Verify the times before, after, and during the maturation:
   message("Indicating the times before, during, and after maturation...")
@@ -39,8 +50,8 @@ filtra_c <- function(ifile,
   dx <- lapply(1:length(lx), function(i){
     data.frame(class = ifelse(lx[[i]]$timeUTC < lx[[i]][lx[[i]]$phase == "maturation"]$timeUTC,
                               "before_mat",
-                              ifelse(lx[[i]]$phase == "maturation", "peak", "after_mat")), 
-               ID = lx[[i]]$ID, 
+                              ifelse(lx[[i]]$phase == "maturation", "peak", "after_mat")),
+               ID = lx[[i]]$ID,
                diff_size = c(diff(lx[[i]]$SIZE), NA), 
                timeUTC = lx[[i]]$timeUTC)
   })
@@ -48,7 +59,7 @@ filtra_c <- function(ifile,
   dtt <- merge(dt, dx, 
                by = c("ID", "timeUTC"), all.x = TRUE)
   
-  dtt[, diff_size2 := c(NA,diff(SIZE)),by=.(ID)]
+  dtt[, diff_size2 := c(NA, diff(SIZE)), by=.(ID)]
   
   dtt$diff_size3 <- ifelse(dtt$class == "before_mat", dtt$diff_size,
                            ifelse(dtt$class == "after_mat", dtt$diff_size2,NA))
@@ -60,25 +71,26 @@ filtra_c <- function(ifile,
   dtt$um <- 1
   # Calcula quantos % do tempo de vida do MCSs esteve antes e depois da maturacao
   dtt[, perc := um / sum(um), by = .(ID, class) ]
+  
   # Coloca a % calculada anteriormente negativa quando diff_size eh negativa
   dtt$perc_posneg <- ifelse(dtt$diff_size3 < 0, dtt$perc*(-1), dtt$perc)
+  
   # soma perc_posneg antes e depois da maturacao
-  dtt[ , perc2 := sum(perc_posneg, na.rm = TRUE), by = .(ID, class) ]
+  dtt[ (class == "before_mat" & perc_posneg > 0 |
+         class == "after_mat" & perc_posneg < 0), 
+       perc2 := abs(sum(perc_posneg, na.rm = TRUE)), by = .(ID, class) ]
   
   # 3)
   # Verifica se a soma % de positivos (antes da maturacao) é maior que 50%
   #        e se a soma % de negativos (depois da maturacao) é menor que 50%
-  dtt$cond1 <- ifelse(dtt$perc2 > threshold & dtt$class == "before_mat", "ficaria",
-                      ifelse(dtt$perc2 < -threshold & dtt$class == "after_mat", "ficaria",
-                             ifelse(dtt$class == "peak", "pico",
-                                    ifelse(is.na(dtt$diff_size3), NA, "sairia"))))
+  dtt$cond1 <- ifelse(dtt$perc2 <= threshold, "sairia", "ficaria")
   
-  dtt[ , cond2 := ifelse(any(cond1 %in% "sairia"), "SAI", "FICA"), by = .(ID) ]
-  
+  id_sai <- unique(dtt[cond1 == "sairia"]$ID)
+
   # 4) Filtra e salva
-  df <- dtt[cond2 == "FICA"]
-  
-  df <- df[, -c(37:46)]
+  df <- dtt[!ID %in% id_sai]
+
+  df <- df[, -c("class", "diff_size", "diff_size2", "diff_size3", "um", "perc", "perc_posneg", "perc2", "cond1")]
   
   if(!missing(ofile)){
     data.table::fwrite(df, ofile, row.names = FALSE)

@@ -4,9 +4,11 @@ NEWS
 ## TODO
 
 - adicionar uma opcao para digitar a fonte caso esquecer na funcao pre_filter
-- checar filtra_c
-- filtra_c usar funcao em C++ para calc distancias
+- filtra_d usar funcao em C++ para calc distancias
 - Revisar Ingles e terminar de traduzir
+
+### percolator 0.4.2 (Release date: 2021-03-11)
+- Fix filtra_c  function.
 
 ### percolator 0.4.1 (Release date: 2021-03-06)
 - Correct filtra_b classification of the oceanic and continental MCSs.
