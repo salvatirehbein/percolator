@@ -17,22 +17,22 @@
 #'                   TIME = dt$TIME)
 #' }
 UTC <- function(YEAR, MONTH, DAY, HOUR, TIME) {
-  round2 = function(x, n) {
-    posneg = sign(x)
-    z = abs(x)*10^n
-    z = z + 0.5 + sqrt(.Machine$double.eps)
-    z = trunc(z)
-    z = z/10^n
-    z*posneg
-  }
-  # https://stackoverflow.com/a/12688836/7542391
-  TIMEv2 <- round2(TIME, 1)
-  # TIMEv2 <- round(TIME, 1)
+  decimales <- TIME - trunc(TIME)
+  decimales2 <- data.table::fifelse(
+    decimales < 0.25, 0,
+    data.table::fifelse(
+      decimales >=0.25 & decimales < 0.75, 0.5,
+      1
+    )            
+  )
+  TIMEv2 <- trunc(TIME) + decimales2
+  # TIMEv2 <- round(TIME2, 1)
+  
   HOURv2 <- round(HOUR, 1)
   HOURv3 <- ifelse((HOURv2 %% 1) > 0.4, #avoid ring of hell!!
-                      # se usamos >0.3, vai pegar o valor 0.3000000001
-                      round(HOURv2),
-                      HOURv2)
+                   # se usamos >0.3, vai pegar o valor 0.3000000001
+                   round(HOURv2),
+                   HOURv2)
   timeINI <-  paste0(YEAR,
                      "-",
                      ifelse(MONTH < 10,
