@@ -4,6 +4,7 @@
 #' To be used only with precipitation data.
 #' @param ifile Character. Input filename. Generally as c_YYYYMM.txt
 #' @param ofile Character. Output filename. Sugested: d_YYYYMM.txt
+#' @param re Numeric. Minimum effective radio for filter MCSs. 
 #' @param pixels_size Numeric. Pixels size in km2. Change from date to date.
 #' @return data.frame
 #' @importFrom data.table fread fwrite
@@ -15,6 +16,7 @@
 #' }
 filtra_extent <- function(ifile,
                      ofile,
+                     re = 50,
                      pixels_size) {
   cat("Starting filtra_e... \n")
   
@@ -23,7 +25,8 @@ filtra_extent <- function(ifile,
   
   # Filter by size
   SIZE_km <- NULL
-  IDs <- unique(x[SIZE_km >= 7854]$ID)
+  Ae <- pi*re^2
+  IDs <- unique(x[SIZE_km >= Ae]$ID)
   
   ID <- NULL 
   df <- x[ID%in%IDs, ]

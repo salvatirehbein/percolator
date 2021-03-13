@@ -4,12 +4,14 @@
 \alias{filtra_extent}
 \title{Filter by minimum extention (precipitation Houze)}
 \usage{
-filtra_extent(ifile, ofile, pixels_size)
+filtra_extent(ifile, ofile, re = 50, pixels_size)
 }
 \arguments{
 \item{ifile}{Character. Input filename. Generally as c_YYYYMM.txt}
 
 \item{ofile}{Character. Output filename. Sugested: d_YYYYMM.txt}
+
+\item{re}{Numeric. Minimum effective radio for filter MCSs.}
 
 \item{pixels_size}{Numeric. Pixels size in km2. Change from date to date.}
 }

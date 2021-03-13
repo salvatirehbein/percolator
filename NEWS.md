@@ -7,6 +7,9 @@ NEWS
 - filtra_d usar funcao em C++ para calc distancias
 - Revisar Ingles e terminar de traduzir
 
+### percolator 0.4.3 (Release date: 2021-03-13)
+- Fix UTC function
+
 ### percolator 0.4.2 (Release date: 2021-03-11)
 - Fix filtra_c  function.
 
