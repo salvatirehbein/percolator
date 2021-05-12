@@ -35,12 +35,15 @@ filtra_d <- function(ifile,
   
   x <- data.table::fread(ifile)
   
+  
+  if (nrow(x) > 0) {
+    
   message("Calculating distances... (This may take some minutes)")
   x_ini <- x[[coords[1]]]
   y_ini <- x[[coords[2]]]
   x_fim <- x_ini[c(2:length(x_ini), NA)]
   y_fim <- y_ini[c(2:length(y_ini), NA)]
-  
+    
   df2 <- data.frame(ID = x$ID,
                     phase = x$phase,
                     x_ini,
@@ -89,5 +92,9 @@ filtra_d <- function(ifile,
     data.table::fwrite(x = dff, file = ofile, quote = T, row.names = F)
   } else {
     return(dff)
+  }
+  
+  } else {
+    message("Este arquivo esta vazio. Nao ha nada o que fazer")
   }
 }

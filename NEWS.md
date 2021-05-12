@@ -3,9 +3,13 @@ NEWS
 
 ## TODO
 
-- adicionar uma opcao para digitar a fonte caso esquecer na funcao pre_filter
+- adicionar uma opcao para digitar a fonte caso esquece-la na funcao pre_filter
 - filtra_d usar funcao em C++ para calc distancias
 - Revisar Ingles e terminar de traduzir
+- adicionar funcao da densidade~
+
+### percolator 0.4.4 (Release date: 2021-05-12)
+- Add a condition for those files with no rows to be read in filtra_d function.
 
 ### percolator 0.4.3 (Release date: 2021-03-13)
 - Fix UTC function
