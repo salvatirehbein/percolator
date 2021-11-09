@@ -78,6 +78,14 @@ pre_filter <- function(ifile,
                      TIME = dt$TIME)
   message("Done!")
   
+  # Add Local Time ####
+  message("Obtaining Local Time")
+  message("This may take some minutes...")
+  dt$tz <- LT(x = dt)
+  dt$timeLT <- dt$timeUTC + dt$tz*60*60
+  
+  message("Done!")
+  
   # Add fonte ####
   message("Writing fonte...")
   dt$fonte <- fonte
