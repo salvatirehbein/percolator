@@ -10,7 +10,8 @@ Authors@R: c(person("Amanda", "Rehbein",
   role = c("aut", "cre"), email = "sergio.ibarra@usp.br", 
     comment = c(ORCID = "0000-0002-3162-1905")))
 Description: Handle data from fortracc outputs.
-Imports: data.table, geosphere, maptools, plyr, rgdal, sf, sp, units
+Imports: data.table, geosphere, maptools, plyr, rgdal, sf, sp, units, raster, 
+   MASS
 Suggests: cptcity
 License: GPL-3
 URL: https://github.com/salvatirehbein/percolator/

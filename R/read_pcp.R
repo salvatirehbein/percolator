@@ -21,7 +21,8 @@
 #' @export
 #' @examples \dontrun{
 #' read_pcp(ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/fam_R12534354_200201010000.txt",
-#'          ofile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/APAGAR.txt")
+#'          ofile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/APAGAR.txt", 
+#'          experiment = "SAAG")
 #' }
 read_pcp <- function(ifile, ofile, experiment) {
   out <- .Fortran("pcp",
