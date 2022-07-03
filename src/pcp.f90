@@ -1,8 +1,9 @@
-SUBROUTINE pcp(ifile, ofile) ! # nocov start
+SUBROUTINE pcp(ifile, ofile, experiment) ! # nocov start
 
 
 CHARACTER*100 :: ifile
 CHARACTER*100 :: ofile
+CHARACTER*10 :: experiment
 CHARACTER*5 :: variable
 INTEGER, PARAMETER :: nfam=100000,ntime=201
 INTEGER :: j,k,nn
@@ -43,7 +44,7 @@ OPEN(5,file=ifile,status='old')
 OPEN(10,file=ofile,status='unknown')
 
 PRINT *, "Attention!!! &
-          This routine must not be used in the case of more than 200 lines in the body block"
+          This routine must not be used in the case of more than 200 lines in the table body"
 
 WRITE(10,700)"FAMILY YEAR MONTH DAY HOUR FIRST_MEMBER CLASSIF VAR MISSING SYS YLAT &
    XLON TIME SIZE DSIZE PMED DPMED PMAX DPMAX PMAX9 DPMAX9 FRAC VEL DIR &
@@ -53,9 +54,15 @@ WRITE(10,700)"FAMILY YEAR MONTH DAY HOUR FIRST_MEMBER CLASSIF VAR MISSING SYS YL
 
 DO k=1,nfam
 
+ IF (experiment.eq.'SAAG') THEN
+ 21 READ(5,201,end=250)family(k),year(k),month(k),&
+                       day(k),hour(k),fmember(k),classif(k)
+ ELSE                        
  20 READ(5,200,end=250)family(k),year(k),month(k),&
                        day(k),hour(k),fmember(k),classif(k)
-                           
+ END IF
+ 
+ 201 FORMAT(7x,I15,9x,i4,8x,i2,6x,i2,6x,f5.2,14x,i4,9x,a3)
  200 FORMAT(7x,I5,9x,i4,8x,i2,6x,i2,6x,f5.2,14x,i4,9x,a3)
  
      READ(5,1113)
@@ -133,7 +140,7 @@ DO k=1,nfam
   749 FORMAT(a1,i4,2x,2(f7.2,1x),f6.2,1x,(i6,1x),(f8.1,1x),&
              6(f7.1,1x),f5.2,1x,f7.1,1x,i4,1x,f6.2,1x,1a,1x,20(i4,1x))
 
-  800 FORMAT(I5,1x,i4,1x,i2,1x,i2,1x,f5.2,1x,i4,1x,a3,1x,a5,1x,&    ! header + variable
+  800 FORMAT(I15,1x,i4,1x,i2,1x,i2,1x,f5.2,1x,i4,1x,a3,1x,a5,1x,&    ! header + variable
              i1,1x,i4,1x,2(f7.2,1x),f6.2,1x,(i6,1x),(f8.1,1x),&     ! ateh DSIZE
              6(f7.1,1x),f5.2,1x,f7.1,1x,i4,1x,f6.2,1x,1a,1x,20(i4,1x))
 

@@ -7,6 +7,11 @@ NEWS
 - filtra_d usar funcao em C++ para calc distancias
 - Revisar Ingles e terminar de traduzir
 
+### percolator 0.4.7 (Release date: 2022-07-02)
+- Add if...else in pre_filter for choosing not filtering by growing curve.
+- Add experiment argument in read_pcp for read/writing family numbers above 
+  99999. E.g.: experiment=SAAG for experiments with more than 100000 families.
+
 ### percolator 0.4.6 (Release date: 2021-11-26)
 - Add function for calculate density maps (calc_density)
 

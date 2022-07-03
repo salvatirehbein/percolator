@@ -2,11 +2,12 @@
 #'
 #' @description This function performs a pre-filter after adding essentials fields
 #' to the data. It should be used after read_pcp.R or read_tb.R and before filtra_a.R.
-#' It reads the files outputed by fortran routine/function
-#' (YYYYMM.txt); give the fonte and period for each family; creates IDs for each family,
+#' It reads the files fortran output routine/function (e.g.: YYYYMM.csv); 
+#' add the fonte and period for each family; creates IDs for each family,
 #' obtain their lifespan, timeUTC, phases, distances, and total displacement; 
-#' filter data eliminating families in which the genesis, maturation, and/or dissipation 
-#' happened at the same time; and then save the final dataset.
+#' filter (if growing_curve is TRUE) data eliminating families in which the
+#' genesis, maturation, and/or dissipation happened at the same time; 
+#' and then save the final data set.
 #'
 #' @param ifile Character. Input filename. Generally as YYYYMM.txt
 #' @param ofile Character. Output filename. Sugested: a_YYYYMM.csv
@@ -14,9 +15,11 @@
 #' MERG product, "IMERG", "CMORPH", "NICAM AMIP", "NICAM HighResMIP".
 #' It will be added as a field in the final data.frame. It is not 
 #' used for filtering.
-#' @param period Character. Choose between "present" or "future". 
-#' It will be added as a field in the final data.frame. 
-#' It is not used for filtering.
+#' @param period Character. Choose between "present" or "future". It will be 
+#' added as a field in the final data.frame. not used for filtering.
+#' @param growing_curve Boolean. If TRUE (default) families in which the
+#' genesis, maturation, and/or dissipation happened at the same time are removed.
+#' It is a filter.
 #' @return data.table
 #' @importFrom data.table fread fwrite setcolorder fifelse
 #' @importFrom utils menu
@@ -31,8 +34,9 @@
 pre_filter <- function(ifile,
                        ofile,
                        fonte,
-                       period) {
-
+                       period, 
+                       growing_curve = TRUE) {
+  
   periods <- c("present", "future")
   if(missing(period)){
     choice <- utils::menu(periods, title="Choose var")
@@ -72,10 +76,10 @@ pre_filter <- function(ifile,
   # Add Time UTC ####
   message("Obtaining time in UTC...")
   dt$timeUTC <- UTC(YEAR = dt$YEAR,
-                     MONTH = dt$MONTH,
-                     DAY = dt$DAY,
-                     HOUR = dt$HOUR,
-                     TIME = dt$TIME)
+                    MONTH = dt$MONTH,
+                    DAY = dt$DAY,
+                    HOUR = dt$HOUR,
+                    TIME = dt$TIME)
   message("Done!")
   
   # Add Local Time ####
@@ -104,7 +108,7 @@ pre_filter <- function(ifile,
               maturation = data.table::fifelse(SIZE == max(SIZE), TRUE, FALSE), 
               dissipation = data.table::fifelse(TIME == max(TIME), TRUE, FALSE)),
      by = ID]
-  message("Done!")
+  message("Obtaining Phases: Done!")
   
   # Obtain the position/timestep in which maturation happens 
   message("Pre-filtering curves...")
@@ -113,20 +117,27 @@ pre_filter <- function(ifile,
   # where the maximum extension happens
   dt[, maturation := data.table::fifelse(mat2 == max(mat2), TRUE, FALSE),
      by = ID]
-  # Select IDs in which the genesis, maturation, and
-  # dissipation happened at the same time
-  # Looking for the situation below:
-  # ==========================================================
-  #  TIME      SIZE    genesis     maturation     dissipation
-  # ==========================================================
-  #  tmin       -         1            0               0
-  #   -        max        0            1               0
-  #  tmax       -         0            0               1
-  # ==========================================================
-  # Isso eliminaria a necessidade de usar as derivadas.
-  ids <- unique(dt[genesis+maturation+dissipation  > 1]$ID)
-  dtt <- dt[!ID %in% ids]
   
+  # Growing curve filter
+  if (growing_curve == TRUE) {
+    # Select IDs in which the genesis, maturation, and
+    # dissipation happened at the same time
+    # Looking for the situation below:
+    # ==========================================================
+    #  TIME      SIZE    genesis     maturation     dissipation
+    # ==========================================================
+    #  tmin       -         1            0               0
+    #   -        max        0            1               0
+    #  tmax       -         0            0               1
+    # ==========================================================
+    # Isso eliminaria a necessidade de usar as derivadas.
+    ids <- unique(dt[genesis+maturation+dissipation  > 1]$ID)
+    dtt <- dt[!ID %in% ids]
+    
+  } else {
+    dtt <- dt
+  }
+  # Create an unique field for phase:
   dtt$phase <- ifelse(
     dtt$genesis == TRUE, "genesis",
     ifelse(
@@ -135,7 +146,7 @@ pre_filter <- function(ifile,
         dtt$dissipation == TRUE, "dissipation",
         NA)))  
   dtt$genesis <- dtt$maturation <- dtt$dissipation <- dtt$mat2 <- NULL
-  message("Done!")
+  message("Phases: Done!")
   
   # Obtain distances ####
   message("Calculating distances... (This will take some minutes)")

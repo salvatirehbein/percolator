@@ -8,6 +8,8 @@
 #'
 #' @param ifile Character. Input filename. Generally as YYYYMM.txt
 #' @param ofile Character. Output filename. Sugested: a_YYYYMM.csv
+#' @param classif Character. Select only new systems if classif="N" (default). 
+#' Classif=NULL doesn't filter the systems.
 #' @param variable Character. Tells the filter which data was used for 
 #' tracking the cloud clusters by ForTraCC. Choose among: "Tb", "PCP", 
 #' or "OLR". It is important to set this properly, since each one of 
