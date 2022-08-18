@@ -17,26 +17,15 @@ filtra_a(
 
 \item{ofile}{Character. Output filename. Sugested: a_YYYYMM.csv}
 
+\item{classif}{Character. Select only new systems if classif="N" (default). 
+Classif=NULL doesn't filter the systems.}
+
 \item{filtra_time}{Numeric. Tells the minimum lifespan the remaining MCSs 
 should have. In general, they live 3 hours or more. This is the default value.}
 
 \item{classifica_lifespan}{Numeric. Allows to classify between long- or 
 short-lived MCS. Require a threshold to identify the lifespans. 
 Default is 5 hours and 30 minutes.}
-
-\item{variable}{Character. Tells the filter which data was used for 
-tracking the cloud clusters by ForTraCC. Choose among: "Tb", "PCP", 
-or "OLR". It is important to set this properly, since each one of 
-these variables provide files with different fields.}
-
-\item{fonte}{Character. Source of the data. For instance: "Tb" for the
-MERG product, "IMERG", "CMORPH", "NICAM AMIP", "NICAM HighResMIP".
-It will be added as a field in the final data.frame. It is not 
-used for filtering.}
-
-\item{period}{Character. Choose between "present" or "future". 
-It will be added as a field in the final data.frame. 
-It is not used for filtering.}
 }
 \value{
 data.table

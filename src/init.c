@@ -7,11 +7,11 @@
  */
 
 /* .Fortran calls */
-extern void F77_NAME(pcp)(void *, void *, void *);
+extern void F77_NAME(pcp)(void *, void *);
 extern void F77_NAME(tb)(void *, void *);
 
 static const R_FortranMethodDef FortranEntries[] = {
-  {"pcp",            (DL_FUNC) &F77_NAME(pcp),            3},
+  {"pcp",            (DL_FUNC) &F77_NAME(pcp),            2},
   {"tb",             (DL_FUNC) &F77_NAME(tb),             2},
   {NULL, NULL, 0}
 };

@@ -4,7 +4,7 @@
 \alias{pre_filter}
 \title{Performs a pre-filter for filtering fortracc output}
 \usage{
-pre_filter(ifile, ofile, fonte, period)
+pre_filter(ifile, ofile, fonte, period, growing_curve = TRUE)
 }
 \arguments{
 \item{ifile}{Character. Input filename. Generally as YYYYMM.txt}
@@ -16,9 +16,12 @@ MERG product, "IMERG", "CMORPH", "NICAM AMIP", "NICAM HighResMIP".
 It will be added as a field in the final data.frame. It is not 
 used for filtering.}
 
-\item{period}{Character. Choose between "present" or "future". 
-It will be added as a field in the final data.frame. 
-It is not used for filtering.}
+\item{period}{Character. Choose between "present" or "future". It will be 
+added as a field in the final data.frame. not used for filtering.}
+
+\item{growing_curve}{Boolean. If TRUE (default) families in which the
+genesis, maturation, and/or dissipation happened at the same time are removed.
+It is a filter.}
 }
 \value{
 data.table
@@ -26,11 +29,12 @@ data.table
 \description{
 This function performs a pre-filter after adding essentials fields
 to the data. It should be used after read_pcp.R or read_tb.R and before filtra_a.R.
-It reads the files outputed by fortran routine/function
-(YYYYMM.txt); give the fonte and period for each family; creates IDs for each family,
+It reads the files fortran output routine/function (e.g.: YYYYMM.csv); 
+add the fonte and period for each family; creates IDs for each family,
 obtain their lifespan, timeUTC, phases, distances, and total displacement; 
-filter data eliminating families in which the genesis, maturation, and/or dissipation 
-happened at the same time; and then save the final dataset.
+filter (if growing_curve is TRUE) data eliminating families in which the
+genesis, maturation, and/or dissipation happened at the same time; 
+and then save the final data set.
 }
 \examples{
 \dontrun{

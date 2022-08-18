@@ -10,17 +10,6 @@
 #' @param ofile Character. Output filename. Sugested: a_YYYYMM.csv
 #' @param classif Character. Select only new systems if classif="N" (default). 
 #' Classif=NULL doesn't filter the systems.
-#' @param variable Character. Tells the filter which data was used for 
-#' tracking the cloud clusters by ForTraCC. Choose among: "Tb", "PCP", 
-#' or "OLR". It is important to set this properly, since each one of 
-#' these variables provide files with different fields.
-#' @param fonte Character. Source of the data. For instance: "Tb" for the
-#' MERG product, "IMERG", "CMORPH", "NICAM AMIP", "NICAM HighResMIP".
-#' It will be added as a field in the final data.frame. It is not 
-#' used for filtering.
-#' @param period Character. Choose between "present" or "future". 
-#' It will be added as a field in the final data.frame. 
-#' It is not used for filtering.
 #' @param filtra_time Numeric. Tells the minimum lifespan the remaining MCSs 
 #' should have. In general, they live 3 hours or more. This is the default value.
 #' @param classifica_lifespan Numeric. Allows to classify between long- or 

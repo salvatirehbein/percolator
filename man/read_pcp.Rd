@@ -18,19 +18,19 @@ character
 }
 \description{
 This function transform the ForTraCC output 
-(from precipitation) that has a block format (with head 
-and tail information) in a plain text, with no blank lines
-in between the families. It takes  information from the
+(from precipitation) that has a table format (with header 
+and footnote information) in a plain text, with no blank lines
+in between the families. It takes information from the
 header and write it as many time as the duration (or TIME).
 
 This function calls a fortran subroutine for reading ForTraCC
-"fam" archives outuput and rewrite them in .csv format (or other).
+"fam" outputs and rewrite them in a .csv format.
 Due to memory limitation, this function cannot be used for cloud
-systems producing more than 200 lines in the body block.
+systems producing more than 200 lines in the table body.
 }
 \examples{
 \dontrun{
-read_pcp(ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/fam_R12534354_200201010000.txt",
-         ofile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/APAGAR.txt")
+read_pcp(ifile = system.file("extdata", "fam_20001231.txt", package = "percolator"),
+         ofile = "~/Documents/pos_doc/FAPESP/SAAG/teste.csv")
 }
 }

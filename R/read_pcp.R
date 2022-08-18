@@ -15,19 +15,16 @@
 #' with "fam". Maximum of 100 characters.
 #' @param ofile character. Name of output file. For running the other filters,
 #' it must be "csv" format. Maximum of 100 characters.
-#' @param experiment Character. Name of the experiment. E.g.: SAAG  
 #' @return character
 #' @useDynLib percolator
 #' @export
 #' @examples \dontrun{
-#' read_pcp(ifile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/fam_R12534354_200201010000.txt",
-#'          ofile = "/media/amanda/Elements/AR/SAIDAS_FORTRACC/fam/IMERG/APAGAR.txt", 
-#'          experiment = "SAAG")
+#' read_pcp(ifile = system.file("extdata", "fam_20001231.txt", package = "percolator"),
+#'          ofile = "~/Documents/pos_doc/FAPESP/SAAG/teste.csv")
 #' }
-read_pcp <- function(ifile, ofile, experiment) {
+read_pcp <- function(ifile, ofile) {
   out <- .Fortran("pcp",
                   ifile = as.character(ifile),
-                  ofile = as.character(ofile), 
-                  experiment = as.character(experiment))
+                  ofile = as.character(ofile))
   return(out)
 }

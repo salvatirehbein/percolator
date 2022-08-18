@@ -8,4 +8,3 @@ all:
 $(SHLIB): $(FT_OBJS) $(C_OBJS)
 
 init.o:  pcp.o tb.o
- 
