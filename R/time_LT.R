@@ -9,6 +9,7 @@
 #' @param coords vector of strings. Coordinates names (longitude first).
 #' \url{www.naturalearthdata.com/downloads/10m-cultural-vectors/timezones/}
 #' @return data.frame
+#' @importFrom sf sf_use_s2
 #' @export
 #' @examples \dontrun{
 #' }
@@ -17,6 +18,11 @@ LT <- function(x,
                                "ne_10m_time_zones/ne_10m_time_zones.shp",
                                package = "percolator"),
                coords = c("XLON", "YLAT")){
+    # Para resolver o problema:
+    # "Error in wk_handle.wk_wkb(wkb, s2_geography_writer(oriented = oriented,  : 
+    # Loop 0 is not valid: Edge 672 crosses edge 707"
+    # Usei a solucao: https://gis.stackexchange.com/questions/404385/r-sf-some-edges-are-crossing-in-a-multipolygon-how-to-make-it-valid-when-using
+    sf::sf_use_s2(FALSE) 
   
     d_SCM <- x
     timezones <- sf::st_read(y)
