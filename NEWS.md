@@ -7,6 +7,9 @@ NEWS
 - filtra_d usar funcao em C++ para calc distancias
 - Revisar Ingles e terminar de traduzir
 
+### percolator 0.5.0 (Release date: 2022-09-28)
+- Substituted filtra_saag function by ...
+
 ### percolator 0.4.9 (Release date: 2022-08-30)
 - Fixed s2 polygon problem in LT function by adding sf::sf_use_s2(FALSE)
 - Add dist_max filter in filtra_saag() function

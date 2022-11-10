@@ -1,6 +1,6 @@
-#' Obtain SAAG Deep Convection Working Group MCSs from ForTraCC outputs
+#' Filter Fortracc outputs to match MCSs definition from the SAAG Deep Convection Group
 #'
-#' @description This function filter the ForTraCC outputs to select MCSs that match 
+#' @description  This function filter the ForTraCC outputs to select MCSs that match 
 #' the criteria defined by the SAAG Deep Convection Working Group at April 13, 2022 meeting 
 #' (https://ral.ucar.edu/projects/south-america-affinity-group-saag/deep-convection-working-group).  
 #' It also creates unique ID's for each family, obtain their lifespan, timeUTC, timeLT, 
@@ -15,275 +15,349 @@
 #'   least once in the lifetime of the MCS;
 #' - Overshoot threshold - Tb < 225 K exists during the cloud lifetime.
 #'
-#' @param ifile Character. Input filename. Generally as fam_WRF_PCP_WRF_YYYYMMDDHHMM.txt
-#' @param ofile Character. Output filename. Suggested: WRF_PCP_WRF_YYYY.csv
-#' @param dx Numeric. Used to determine the area of the pixel. E.g.: 11.132 (default)
-#' @param dy Numeric. Used to determine the area of the pixel. E.g.: 11.132 (default)
-#' @param min_volume Numeric. Used for filter as determined in the SAAG DCWG Meeting 
-#' at April 13, 2022.
-#' @param dist_km Boolean. If TRUE will calculate the distance in km between one
-#' timestep and another. Being TRUE it will also allows for filter the maximum distante
-#' between one timestep and another using 'dist_max'. However dist_km = TRUE takes 
-#' very very long time for performing calculations. Therefore the default is FALSE. 
-#' @param dist_max Numeric. Maximum distance in km allowed between two consecutive timesteps.
-#' ForTraCC sometimes connects two no related cloud systems. This filter remove the 
-#' entire family when the distance between two consecutive timesteps are larger than 
-#' the threshold defined. By default it is 300 km (recommended for 30 min timesteps)
-#' @param variable Character. "PCP" (default) or "Tb".
-#' @param experiment Character. Suggested: "WRF SAAG 3yr" (default) or "WRF SAAG 20yr"
-#' @param period Character. Choose between "present" (default) or "future".
-#' @param growing_curve Boolean. If TRUE (default) families in which the
-#' genesis, maturation, and/or dissipation happened at the same time are removed.
-#' It is a filter.
-#' @return data.table
-#' @importFrom data.table fread fwrite setcolorder fifelse
-#' @importFrom utils menu
-#' @importFrom geosphere distHaversine
+#' @param xmin Numeric. Western coord. of the native data. EX:
+#' ncdump merg_2010010100_4km-pixel.nc | less
+#' @param xmax Numeric. Eastern coord. of the native data. EX:
+#' @param ymin Numeric. Southern coord. of the native data. EX:
+#' @param ymax Numeric. Northern coord. of the native data. EX:
+#' @param ncols Integer. Relative to the native data.
+#' @param nlins Integer. Relative to the native data.
+#' @param type Character. Use "Observational" for GPM IMERG or "WRF" for WRF SAAG Simulations.
+#' @param family_file Character. Name of the family file (including the path to it)
+#' obtained by Fortracc. Must be one starting with "fam_"
+#' @return netCDF
+#' @importFrom data.table fread fwrite setorder
+#' @importFrom raster raster brick flip
+#' @importFrom ncdf4 nc_open nc_close ncvar_get
 #' @export
 #' @examples \dontrun{
-#' filtra_saag(ifile <- "/glade/work/arehbein/SAAG/3yr/SAIDAS_FORTRACC/fam_SAAG_PCP_WRF_201906302300.txt", 
-#'            ofile = "/glade/work/arehbein/SAAG/3yr/SAIDAS_FORTRACC/SAAG_PCP_WRF_2010.txt")
-#'}
-filtra_saag <- function(ifile,
-                        ofile,
-                        dx = 0.1*111.32, # area do pixel
-                        dy = 0.1*111.32, # area do pixel
-                        min_volume = 20000, # determinado na reuniao em Apr. 13, 2022
-                        dist_km = FALSE, # Calcular a dist entre um timestep e outro? eh demorado
-                        dist_max = 300, # somente sera usado se dist_km = TRUE
-                        variable = "PCP",
-                        experiment = "WRF SAAG 3yr",
-                        period = "present", 
-                        growing_curve = FALSE) {
-  
-  # periods <- c("present", "future")
-  # 
-  # if(missing(period)){
-  #   choice <- utils::menu(periods, title="Choose var")
-  #   period <- periods[choice]
-  # }
-  
-  dt <- data.table::fread(ifile, fill = TRUE)
-  
-  
-  # Add ID's ####
-  message("Obtaining ID...")
-  dt$ID <- paste0(ifelse(nchar(dt$FAMILY) == 1, paste0("0000",dt$FAMILY),
-                         ifelse(nchar(dt$FAMILY) == 2, paste0("000",dt$FAMILY),
-                                ifelse(nchar(dt$FAMILY) == 3, paste0("00",dt$FAMILY),
-                                       ifelse(nchar(dt$FAMILY) == 4, paste0("0",dt$FAMILY),
-                                              dt$FAMILY)))),
-                  dt$YEAR, 
-                  ifelse(dt$MONTH > 9, 
-                         as.character(dt$MONTH), 
-                         paste0("0", dt$MONTH)),
-                  ifelse(dt$DAY > 9, 
-                         dt$DAY, 
-                         paste0("0", dt$DAY)))
-  
-  # Reorder columns so ID come first ####
-  dt <- data.table::setcolorder(x = dt, 
-                                neworder = "ID")
-  message("Done!")
-  
-  # Obtain lifespan ####
-  message("Obtaining lifespans...")
-  dt <- dt[,total_time := max(TIME), by = ID]
-  dt <- dt[, HORA_INI:= min(HOUR), by = ID]
-  
-  message("Done!")
-  
-  # Add fonte ####
-  message("Writing fonte...")
-  dt$experiment <- experiment
-  message("Done!")
-  
-  # Add period ####
-  message("Writing period...")
-  dt$period <- period
-  message("Done!")
-  
-  dt$SIZE_KM2 <- dt$SIZE*dx*dy
-  
-  
-  # Filtering to SAAG by VOLUME ####
-  dt$VOL_PREC_MED <- dt$SIZE_KM2*dt$PMED # km2 mm/h
-  dt$VOL_PREC_MAX <- dt$SIZE_KM2*dt$PMAX  # km2 mm/h
-  dt$criteria_volume <- ifelse(dt$VOL_PREC_MAX >= min_volume, "GOOD", "BAD")
-  IDS <- unique(dt[criteria_volume %in% "GOOD", ]$ID)
-  if (length(IDS) == 0) {
-    dt <- dt
-  } else {
-    dt <- dt[dt$ID%in%IDS,]
-  }
-  dt$criteria_volume <- NULL
-  rm(IDS)
-  
-  # Filtering to SAAG by RATE and LIFESPAN ####
-  # 1 pixel with >= 10 mm/h by 4 consecutive hours:
-  dt$criteria_pmax <- ifelse(dt$PMAX >= 10, 1, 0)
-  dt <- dt[, soma := cumsum(criteria_pmax), by =.(ID)]
-  dt$criteria_soma <-  ifelse(dt$soma >= 4, "GOOD", "BAD")
-  IDS <- unique(dt[criteria_soma %in% "GOOD", ]$ID)
-  if (length(IDS) == 0) {
-    dt <- dt
-  } else {
-    dt <- dt[dt$ID%in%IDS,]
-  }
-  dt$criteria_pmax <- dt$criteria_soma <- dt$soma <-  NULL
-  
-  
-  # Obtain phases ####
-  message("Obtaining phases...")
-  # add three fields, one for each phase
-  # maturation (max. extension) can occurs more than 1 time
-  dt[,  `:=` (genesis = data.table::fifelse(TIME == min(TIME), TRUE, FALSE), 
-              maturation = data.table::fifelse(SIZE == max(SIZE), TRUE, FALSE), 
-              dissipation = data.table::fifelse(TIME == max(TIME), TRUE, FALSE)),
-     by = ID]
-  message("Obtaining Phases: Done!")
-  
-  # Obtain the position/timestep in which maturation happens 
-  message("Pre-filtering curves...")
-  dt[, mat2 := (1:.N)*maturation, by = ID]
-  # Remakes the maturation field with TRUE in the last time
-  # where the maximum extension happens
-  dt[, maturation := data.table::fifelse(mat2 == max(mat2), TRUE, FALSE),
-     by = ID]
-  
-  # Growing curve filter
-  if (growing_curve == TRUE) {
-    # Select IDs in which the genesis, maturation, and
-    # dissipation happened at the same time
-    # Looking for the situation below:
-    # ==========================================================
-    #  TIME      SIZE    genesis     maturation     dissipation
-    # ==========================================================
-    #  tmin       -         1            0               0
-    #   -        max        0            1               0
-    #  tmax       -         0            0               1
-    # ==========================================================
-    # Isso eliminaria a necessidade de usar as derivadas.
-    ids <- unique(dt[genesis+maturation+dissipation  > 1]$ID)
-    dtt <- dt[!ID %in% ids]
-    rm(ids)
-  } else {
-    dtt <- dt
+#' filtra_saag(xmin = -81.95, # Coords. pegas do ncdump --> centroide da celula de grade
+#'             xmax = -34.05,
+#'             ymin = -55.95,
+#'             ymax = 12.95,
+#'             ncols = 480,
+#'             nlins = 690,
+#'             type = "Observational",
+#'             family_file = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/diag.txt/fam_SAAG_Tb_GPM_IMERG_1106_s2.txt",
+#'             pathi_to_prec_file = "/glade/work/arehbein/SAAG/3yr/IMERG/",
+#'             pathi_to_fortracc_clusters = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/clusters/",
+#'             pathi_to_fortracc_txt = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/diag.txt/",
+#'             pathi_to_masks_files = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/MCSs_MASKs/")
+#' }
+filtra_saag <- function(xmin = -81.95,
+                        xmax = -34.05,
+                        ymin = -55.95,
+                        ymax = 12.95,
+                        ncols = 480,
+                        nlins = 690,
+                        type = "Observational",
+                        family_file,
+                        pathi_to_prec_file = "/glade/work/arehbein/SAAG/3yr/IMERG/",
+                        pathi_to_fortracc_clusters = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/clusters/",
+                        pathi_to_fortracc_txt = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/diag.txt/",
+                        pathi_to_masks_files = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/MCSs_MASKs/"
+){
+  # Loading the Pixel Area file for Observational GPM IMERG
+  if(type == "Observational"){
+    nc_area <- ncdf4::nc_open(system.file("extdata", 
+                                          "inst/extdata/grid_area_saag/area_imerg_km2.nc", 
+                                          package = "percolator"))
+    area <- ncdf4::ncvar_get(nc_area, "Band1")
+    m_area <- matrix(area,
+                     nrow = ncols, # precisa ser invertido!!
+                     ncol = nlins) # precisa ser invertido!!
+    mt_area <- t(m_area)
+    r_area <- raster::flip(raster::raster(mt_area,
+                                          xmn = xmin,
+                                          xmx = xmax,
+                                          ymn = ymin,
+                                          ymx = ymax), direction = "y")  # north to south
+    # plot(r_area, main = "GPM IMERG pixel area (north to south)")
   }
   
-  # Create an unique field for phase:
-  dtt$phase <- ifelse(
-    dtt$genesis == TRUE, "genesis",
-    ifelse(
-      dtt$maturation == TRUE & dtt$dissipation == FALSE, "maturation",
-      ifelse(
-        dtt$dissipation == TRUE, "dissipation",
-        NA)))
-  dtt$genesis <- dtt$maturation <- dtt$dissipation <- dtt$mat2 <- NULL
-  message("Phases: Done!")
-  rm(dt, IDS); gc()
+  # if(type == "WRF"){
+  # COMPLETAR
+  # } 
   
-  # Obtain distances ####
-  message("Calculating total distances... (This will take some minutes)")
   
-  x <-dtt[phase %in% c("genesis", "dissipation")]
-  lx <- split(x, x$ID)
-  dx <- lapply(1:length(lx), function(i){
-    
-    if (nrow(lx[[i]]) < 2) {
-      data.frame(distkm = 0,
-                 ID = lx[[i]]$ID)  
-    } else {
-      data.frame(distkm = geosphere::distHaversine(p1 = cbind(lx[[i]]$XLON,lx[[i]]$XLAT)[1,], 
-                                                   p2 = cbind(lx[[i]]$XLON,lx[[i]]$XLAT)[2,])/1000,
-                 ID = lx[[i]]$ID) }
-  })
+  # 1) Filter Fortracc Tb #### 
+  # output according to the SIZE and LIFESPAN 
+  ffile <- family_file
+  # source("tb_filter.R")
+  # --------------------------------------------------------------- BEGIN
+  dt_fam <- data.table::fread(ffile, fill = TRUE)
+  dt_fam$HOUR3 <- dt_fam$HOUR
+  dt_fam$HOUR <- dt_fam$HOUR2
+  dt_fam$HOUR2 <- NULL
+  dt_fam$SIZE_km2 <- 10*10*dt_fam$SIZE
   
-  dx <- data.table::rbindlist(dx)
-  dtt2 <- merge(dtt, unique(dx), by = "ID", all.x = T)
-  message("Done!")
+  # SAAG Tb Criterias ####
+  dt_fam$criterio_size <- ifelse(dt_fam$TMED <= 241*100 &
+                                   dt_fam$SIZE_km2 >= 40000, 1, 0)
+  dt_fam[, counter := rowid(rleid(criterio_size)), by = FAMILY]
   
-  if (dist_km == TRUE) {
+  FAMILYS <- dt_fam[criterio_size == 1 & counter >= 4, unique(FAMILY)]
+  if (length(FAMILYS) > 0) {
+    dt_fam <- dt_fam[FAMILY%in%FAMILYS,]
+  }; rm(FAMILYS)
+  # tb ≤ 225 K during 4 hrs?
+  dt_fam$Tb_le_225K <- ifelse(dt_fam$TMIN <= 225*100, 1, 0)
+  dt_fam[, counter2 := rowid(rleid(Tb_le_225K)), by = FAMILY]
+  FAMILYS <- dt_fam[Tb_le_225K == 1 & counter2 >= 4, unique(FAMILY)]
+  if (length(FAMILYS) > 0) {
+    dt_fam <- dt_fam[FAMILY%in%FAMILYS,]
+  }; rm(FAMILYS)
+  # --------------------------------------------------------------- END
+  
+  
+  # 2) Obtain info about the precipitation under the cloud shield ####
+  message("Obtain info about the precipitation under the cloud shield.\nThis may take some hours!!")
+  message("(If it crashes, try not to go crazy & increase the memory.)")
+  
+  # i index
+  ldf <- list()
+  b_pcp_fam <- list()  
+  uf <- unique(dt_fam$FAMILY)
+  
+  for(i in seq_along(uf)) {
     
-    message("Calculating distances between consecutive timesteps... (This may take some minutes)")
-    x_ini <- dtt2$XLON
-    y_ini <- dtt2$XLAT
-    x_fim <- x_ini[c(2:length(x_ini), NA)]
-    y_fim <- y_ini[c(2:length(y_ini), NA)]
+    # Iterar FAMILY by FAMILY (can have memory issue)
+    # Running at CASPER, it works with mem=100Gb
     
-    df2 <- data.frame(ID = dtt2$ID,
-                      phase = dtt2$phase,
-                      x_ini,
-                      y_ini,
-                      x_fim,
-                      y_fim)
+    df <- dt_fam[FAMILY == uf[i],]
     
-    # Calculates the distance between coordinates in each timestep
-    for (i in 1:nrow(df2)){
-      df2$distkm[i] <- geosphere::distHaversine(c(df2$x_ini[i], df2$y_ini[i]),
-                                                c(df2$x_fim[i], df2$y_fim[i]))/1000
-    }
-    # Set the last timestep of each ID to NA manually, because
-    # there is no displacement in the last timestep.
-    df2$distkm <- ifelse(df2$phase == "dissipation" & !is.na(df2$phase),
-                         NA,
-                         df2$distkm)
-    dtt2$dist_km <- df2$distkm
+    # j index
+    l1 <- list()
+    lnames <- list()
+    lsum <- list()
+    lmean <- list()
+    lq25 <- list()
+    lq50 <- list()
+    lq75 <- list()
+    lmin <- list()
+    lmax <- list()
+    larea_pcp <- list()
+    lvol <- list()
+    lpcp_tot <- list()
     
-    # filter out IDs that with dist_km >  dist_max in at least one timestep of the MCSs
-    message("Filtering objects connected unrealisticaly.")
-    dtt2$criteria_length <- ifelse(as.numeric(dtt2$dist_km) > dist_max,
-                                   "BAD", "GOOD")
-    IDS <- dtt2[dtt2$criteria_length %in% "BAD", ]$ID
-    
-    if (length(IDS) == 0) {
-      df <- dtt2
-    } else {
-      df <- dtt2[!dtt2$ID%in%IDS,]
+    for(j in seq_along(df$FAMILY)) {
+      
+      # Iterate time by time in each FAMILY    
+      SYS <- df$`SYS#`[j]
+      
+      yyyy <- df$YEAR[j]
+      yy <- substr(yyyy, 3,4)
+      mm <- sprintf(df$MONTH[j], fmt = "%02d")
+      dd <- sprintf(df$DAY[j], fmt = "%02d")
+      hh <- sprintf(df$HOUR[j], fmt = "%02d")
+      mn <- "00"
+      print(paste0("FAMILY: ",  df$FAMILY[j]))  
+      print(paste0("Date: ",  yyyy, "-", mm, "-", dd, " ", hh, ":", mn))  
+      
+      # Open precipitation file
+      if(type == "Observational"){
+        arq_nc <- paste0(pathi_to_prec_file, 
+                         yyyy,"/merg_", yyyy, mm, dd, hh,"_4km-pixel.nc")
+        nc <- ncdf4::nc_open(filename = arq_nc)
+        nc_pcp <- ncdf4::ncvar_get(nc = nc, varid = "precipitationCal")[,,1]
+      }
+      
+      if(type == "WRF"){
+        arq_nc <- paste0(pathi_to_prec_file, 
+                         "tb_rainrate_", yyyy, "-", mm, "-", dd, "_", hh,":00.nc")
+        nc <- ncdf4::nc_open(filename = arq_nc)
+        nc_pcp <- ncdf4::ncvar_get(nc = nc, varid = "rainrate")
+      } 
+      
+      ncdf4::nc_close(nc)
+      
+      m_pcp <- matrix(as.integer(nc_pcp),
+                      nrow = ncols, # precisa ser invertido!!
+                      ncol = nlins) # precisa ser invertido!!
+      mt_pcp <- t(m_pcp)
+      r_pcp <- raster::flip(raster::raster(mt_pcp,
+                                           xmn = xmin,
+                                           xmx = xmax,
+                                           ymn = ymin,
+                                           ymx = ymax), direction = "y")  # north to south
+      
+      # Open Tb clusters generated by Fortracc
+      cluster <- paste0(pathi_to_fortracc_clusters, 
+                        "gs.", yy, mm, dd, ".", hh, mn, "g.raw")
+      v_bin <- readBin(cluster,
+                       what = "integer",
+                       n = ncols*nlins*2,
+                       size = 2)
+      m_bin <- matrix(v_bin, 
+                      nrow = ncols, # precisa ser invertido!!
+                      ncol = nlins) # precisa ser invertido!!
+      mt_bin <- t(m_bin)
+      r_bin <- raster::raster(mt_bin, 
+                              xmn = xmin, 
+                              xmx = xmax, 
+                              ymn = ymin, 
+                              ymx = ymax)                       # north to south
+      r3 <- r_bin # creating raster for precipitation identical to Tb cluster raster
+      
+      # selects precipitation below the Tb cluster numbered as SYS in the 
+      # remaining FAMILY in fam.txt after SAAG Tb Criterias.
+      r3[] <- ifelse(r3[] == SYS, r_pcp[], NA) 
+      # Therefore, r3 is a raster with only one precipitation "cluster"
+      
+      # Save statistics of each precipitation clusters. 
+      # They will be used for filtering according to SAAG PCP Criterias. 
+      l1[[j]] <- r3 
+      lnames[[j]] <- paste0("X", yyyy, mm, dd, hh, mn)
+      lsum[[j]] <- sum(r3[], na.rm = TRUE)
+      lmean[[j]] <- mean(r3[], na.rm = TRUE)
+      lq25[[j]] <- quantile(r3[], 0.25, na.rm = TRUE)
+      lq50[[j]] <- quantile(r3[], 0.50, na.rm = TRUE)
+      lq75[[j]] <- quantile(r3[], 0.75, na.rm = TRUE)
+      lmin[[j]] <- min(r3[], na.rm = TRUE)
+      lmax[[j]] <- max(r3[], na.rm = TRUE)
+      # obtaining precipitation volume --> integrate the multiplication of the 
+      # pcp value in each pixel by the area of each pixel
+      vol_in_the_px <- r3 * r_area
+      lvol[[j]] <- sum(vol_in_the_px[], na.rm = TRUE)
+      # calculate the total precipitation area
+      r4 <- r3
+      r4[] <- ifelse(!is.na(r4[]), r_area[], NA) 
+      larea_pcp[[j]] <- sum(r4[], na.rm = TRUE)
+      # total precipitation
+      lpcp_tot[[j]] <- sum(ifelse(is.na(r3[]), F, T))
+      
     }
     
-    df$criteria_length <- NULL
-    message("Done!")
-    rm(dtt2, dtt, dx, x, IDS, df2)
+    df$pcp_sum <- unlist(lsum) 
+    df$pcp_ave <- unlist(lmean) 
+    df$pcp_q25 <- unlist(lq25)
+    df$pcp_q50 <- unlist(lq50)
+    df$pcp_q75 <- unlist(lq75)
+    df$pcp_min <- unlist(lmin)
+    df$pcp_max <- unlist(lmax)
+    df$total_pcp_area <- unlist(larea_pcp)
+    df$total_vol <- unlist(lvol)
+    df$total_pcp <- unlist(lpcp_tot)
     
-  } else {
-    df <- dtt2
+    ldf[[i]] <- df
+    data.table::fwrite(df,
+                       file = paste0(pathi_to_masks_files, 
+                                     "fam_SAAG_Tb_pcp_info_intermedio_",
+                                     min(dt_fam$YEAR), "-", max(dt_fam$YEAR), ".csv"),
+                       row.names = FALSE,
+                       append = TRUE)
+    
+    gc() 
+  }
+  dt <- data.table::rbindlist(ldf)
+  
+  # Ate aqui tenho a informacao da prec abaixo do escudo de nuvens
+  #writeRaster(brick(b_pcp_fam), "/glade/work/arehbein/SAAG/3yr/teste_pcp_below_cloud.nc", overwrite = T)
+  # fwrite(dt,
+  #        paste0("/glade/work/arehbein/SAAG/3yr/MCSs_MASKs/fam_SAAG_Tb_pcp_info_",
+  #               min(dt_fam$YEAR), "-", max(dt_fam$YEAR), ".csv"),
+  #        row.names = FALSE)
+  
+  
+  # 3) Filter PCP criterias ####
+  message("Filtering the precipitation according to the SAAG criterias.")
+  # source("pcp_filter.R")
+  # ------------------------------------------------------------ START
+  # 1 px ≥10mm/h in T≥4h 
+  dt$pcp_min_criteria <- ifelse(dt$pcp_max >= 10, 1, 0)
+  dt[, counter3 := rowid(rleid(pcp_min_criteria)), by = FAMILY]
+  FAMILYS <- dt[pcp_min_criteria == 1 & counter3 >= 4, unique(FAMILY)]
+  if (length(FAMILYS) > 0) {
+    dt <- dt[FAMILY%in%FAMILYS,]
+  }; rm(FAMILYS) 
+  
+  # 20,000 km2 mm/h (e.g., 100 km x 100 km x 2 mm/h) minimum 
+  # rainfall volume at least once in the lifetime of the MCS 
+  dt$vol_criteria <- ifelse(dt$total_vol >= 20000, 1, 0)
+  FAMILYS <- dt[vol_criteria == 1, unique(FAMILY)]
+  if (length(FAMILYS) > 0) {
+    dt <- dt[FAMILY%in%FAMILYS,]
+  }; rm(FAMILYS) 
+  dt <- dt[, -c("vol_criteria", "pcp_min_criteria", "counter", "counter2", "counter3")]
+  # Quais sao os SYS que devo salvar? 
+  # Passar por todas as linhas identificando os times iguais
+  # criar uma lista para cada time
+  # ------------------------------------------------------------ END
+  
+  dt[ , FAMILY_new := .GRP, by = "FAMILY"] 
+  dt$date <- paste0(sprintf(dt$YEAR, fmt = "%04d"), 
+                    sprintf(dt$MONTH, fmt = "%02d"),
+                    sprintf(dt$DAY, fmt = "%02d"),
+                    sprintf(dt$HOUR, fmt = "%02d"))
+  data.table::fwrite(dt,
+                     file = paste0(pathi_to_fortracc_txt,
+                                   "MCSs_SAAG_", 
+                                   min(dt_fam$YEAR), "-", max(dt_fam$YEAR), ".csv"),
+                     row.names = FALSE)
+  
+  lbin <- list()
+  
+  ud <- sort(unique(dt$date))
+  for(l in seq_along(ud)) {
+    yy <- substr(ud[l], 3, 4)
+    mm <- substr(ud[l], 5, 6)
+    dd <- substr(ud[l], 7, 8)
+    hh <- substr(ud[l], 9, 10)
+    mn <- "00"
+    
+    cluster <- paste0(pathi_to_fortracc_clusters,
+                      "gs.", yy, mm, dd, ".", hh, mn, "g.raw")
+    
+    print(paste0("Reading the cluster file: ", cluster))
+    
+    # binary
+    v_bin <- readBin(cluster,
+                     what = "integer", 
+                     n = ncols*nlins*2, 
+                     size = 2)
+    
+    di <- dt[date == ud[l],]
+    
+    SYS <- di$`SYS#`
+    print(paste0("SYS = ", SYS))
+    
+    
+    # added name in di in order to merge df_bin that will be created following.
+    di$v_bin2 <- di$`SYS#`
+    
+    # create data.table with the vector information from the fortracc cluster binary file
+    # and add id in the case of the merge change the order
+    df_bin <- data.table::data.table(id = 1:length(v_bin),
+                                     v_bin = v_bin)
+    
+    # digo quando tenho MCSs
+    df_bin[, v_bin2 :=  ifelse(v_bin %in% SYS, v_bin, NA)]
+    
+    df_bin <- data.table::merge(x = df_bin,
+                                y = di[, c("v_bin2", "FAMILY_new")],
+                                by = "v_bin2",
+                                all.x = TRUE)
+    data.table::setorderv(df_bin, "id")
+    # df_bin[!is.na(FAMILY_new)]
+    m_bin2 <- matrix(df_bin$FAMILY_new,
+                     nrow = ncols, # precisa ser invertido!!
+                     ncol = nlins) # precisa ser invertido!!
+    dd1 <- dim(m_bin2)
+    mt_bin2 <- m_bin2[1:dd1[1], dd1[2]:1]
+    r_bin2 <- raster::raster(mt_bin2,
+                             xmn = xmin,
+                             xmx = xmax,
+                             ymn = ymin,
+                             ymx = ymax)
+    lbin[[l]] <- mt_bin2
   }
   
-  # # Obtain spatial features ####
-  # dtt$LATY <- dtt$YLAT
-  # dtt$LONX <- dtt$XLON
-  # dtt <- sf::st_as_sf(dtt, coords = c("LONX", "LATY"), crs = 4326)
+  dbin <- unlist(lbin)
   
-  # Add Time UTC ####
-  message("Obtaining time in UTC...")
-  df$timeUTC <- UTC(YEAR = df$YEAR,
-                    MONTH = df$MONTH,
-                    DAY = df$DAY,
-                    HOUR = df$HORA_INI,
-                    TIME = df$TIME)
-  message("Done!")
-  
-  # Add Local Time ####
-  message("Obtaining Local Time")
-  message("This may take some minutes...")
-  df$tz <- LT(x = df,
-              coords = c("XLON", "XLAT"))
-  df$timeLT <- df$timeUTC + df$tz*60*60
-  
-  message("Done!")
-  
-  # Output:
-  if(!missing(ofile)){
-    message(paste0("Saving final dataset in: \n", ofile))
-    data.table::fwrite(x = df, 
-                       file = ofile, 
-                       quote = T, 
-                       row.names = F)
-    message("Done!")
-  } else {
-    message(paste0("Final dataset returned as ", class(df)[1]))
-    return(df)
-  }
+  # 4) Save Tb final Masks --> Write the netcdf ####
+  # write_nc("write_nc.R")
+  write_nc(type = type,
+           dt = dt,
+           pathi_to_prec_file = pathi_to_prec_file,
+           pathi_to_masks_files = pathi_to_prec_file)
 }
-
