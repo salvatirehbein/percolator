@@ -59,8 +59,7 @@ filtra_saag <- function(xmin = -81.95,
 ){
   # Loading the Pixel Area file for Observational GPM IMERG
   if(type == "Observational"){
-    nc_area <- ncdf4::nc_open(system.file("extdata", 
-                                          "inst/extdata/grid_area_saag/area_imerg_km2.nc", 
+    nc_area <- ncdf4::nc_open(system.file("extdata/grid_area_saag/area_imerg_km2.nc", 
                                           package = "percolator"))
     area <- ncdf4::ncvar_get(nc_area, "Band1")
     m_area <- matrix(area,

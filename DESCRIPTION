@@ -1,8 +1,8 @@
 Package: percolator
 Type: Package
 Title: Tools for ForTraCC
-Version: 0.5.0
-Date: 2022-09-28
+Version: 0.6.0
+Date: 2022-11-10
 Authors@R: c(person("Amanda", "Rehbein", 
   role = c("aut"), email = "amanda.rehbein@iag.usp.br", 
     comment = c(ORCID = "0000-0002-8714-7931")),
@@ -10,7 +10,7 @@ Authors@R: c(person("Amanda", "Rehbein",
   role = c("aut", "cre"), email = "sergio.ibarra@usp.br", 
     comment = c(ORCID = "0000-0002-3162-1905")))
 Description: Handle data from fortracc outputs.
-Imports: data.table, geosphere, sf, raster, MASS
+Imports: data.table, geosphere, sf, raster, MASS, ncdf4
 Suggests: cptcity
 License: GPL-3
 URL: https://github.com/salvatirehbein/percolator/
