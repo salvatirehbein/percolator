@@ -93,7 +93,8 @@ filtra_saag <- function(xmin = -81.95,
   # SAAG Tb Criterias ####
   dt_fam$criterio_size <- ifelse(dt_fam$TMED <= 241*100 &
                                    dt_fam$SIZE_km2 >= 40000, 1, 0)
-  dt_fam[, counter := rowid(rleid(criterio_size)), by = FAMILY]
+  dt_fam[, counter := data.table::rowid(
+    data.table::rleid(criterio_size)), by = FAMILY]
   
   FAMILYS <- dt_fam[criterio_size == 1 & counter >= 4, unique(FAMILY)]
   if (length(FAMILYS) > 0) {
@@ -101,7 +102,8 @@ filtra_saag <- function(xmin = -81.95,
   }; rm(FAMILYS)
   # tb ≤ 225 K during 4 hrs?
   dt_fam$Tb_le_225K <- ifelse(dt_fam$TMIN <= 225*100, 1, 0)
-  dt_fam[, counter2 := rowid(rleid(Tb_le_225K)), by = FAMILY]
+  dt_fam[, counter2 := data.table::rowid(
+    data.table::rleid(Tb_le_225K)), by = FAMILY]
   FAMILYS <- dt_fam[Tb_le_225K == 1 & counter2 >= 4, unique(FAMILY)]
   if (length(FAMILYS) > 0) {
     dt_fam <- dt_fam[FAMILY%in%FAMILYS,]
@@ -264,7 +266,8 @@ filtra_saag <- function(xmin = -81.95,
   # ------------------------------------------------------------ START
   # 1 px ≥10mm/h in T≥4h 
   dt$pcp_min_criteria <- ifelse(dt$pcp_max >= 10, 1, 0)
-  dt[, counter3 := rowid(rleid(pcp_min_criteria)), by = FAMILY]
+  dt[, counter3 := data.table::rowid(
+    data.table::rleid(pcp_min_criteria)), by = FAMILY]
   FAMILYS <- dt[pcp_min_criteria == 1 & counter3 >= 4, unique(FAMILY)]
   if (length(FAMILYS) > 0) {
     dt <- dt[FAMILY%in%FAMILYS,]
@@ -293,7 +296,7 @@ filtra_saag <- function(xmin = -81.95,
                                    "MCSs_SAAG_", 
                                    min(dt_fam$YEAR), "-", max(dt_fam$YEAR), ".csv"),
                      row.names = FALSE)
-  
+  gc()
   lbin <- list()
   
   ud <- sort(unique(dt$date))
@@ -332,7 +335,7 @@ filtra_saag <- function(xmin = -81.95,
     # digo quando tenho MCSs
     df_bin[, v_bin2 :=  ifelse(v_bin %in% SYS, v_bin, NA)]
     
-    df_bin <- data.table::merge(x = df_bin,
+    df_bin <- merge(x = df_bin,
                                 y = di[, c("v_bin2", "FAMILY_new")],
                                 by = "v_bin2",
                                 all.x = TRUE)
