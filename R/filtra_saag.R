@@ -172,7 +172,7 @@ if(year_ini == year_fim){
       # Open precipitation file
       if(type == "Observational"){
         arq_nc <- paste0(pathi_to_prec_file, 
-                         yyyy,"/merg_", yyyy, mm, dd, hh,"_4km-pixel.nc")
+                         "merg_", yyyy, mm, dd, hh,"_4km-pixel.nc")
         nc <- ncdf4::nc_open(filename = arq_nc)
         nc_pcp <- ncdf4::ncvar_get(nc = nc, varid = "precipitationCal")[,,1]
         ncdf4::nc_close(nc)
