@@ -336,7 +336,7 @@ if(year_ini == year_fim){
   # nao da para simplesmente selecionar as datas de dt, pois se em um dia nao tiver MCSs, vai pular aquele horario
   # alterando de forma errada a sequencia de datas da lista a ser criada e consequentemente do netcdf.
   # ud <- sort(unique(dt$date))
-  mm_ini <- ifelse(year_ini == year_fim, "01", "06")
+
   message("Is the initial month ", mm_ini, "?, if not, please stop me!")
   ud <- sort(unique(seq(c(ISOdate(year_ini,mm_ini,1,0)), by = "hour", length.out = ndates))) #
   print(paste0("Início da sequencia de datas \n", head(ud)))
@@ -419,7 +419,7 @@ if(year_ini == year_fim){
   write_nc(type = type,
            year_ini = year_ini,
            year_fim = year_fim,
-           mm_fim = mm_fim,
+           mm_ini = mm_ini,
            pathi_to_prec_file = pathi_to_prec_file,
            pathi_to_masks_files = pathi_to_prec_file)
   print("Fim!")
