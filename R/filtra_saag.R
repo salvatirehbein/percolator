@@ -53,10 +53,10 @@ filtra_saag <- function(xmin = -81.95,
                         type = "Observational",
                         mm_ini,  
                         family_file,
-                        pathi_to_prec_file = "/glade/work/arehbein/SAAG/3yr/IMERG/",
-                        pathi_to_fortracc_clusters = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/clusters/",
-                        pathi_to_fortracc_txt = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/diag.txt/",
-                        pathi_to_masks_files = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/MCSs_MASKs/"
+                        pathi_to_prec_file = "/glade/scratch/arehbein/SAAG/20yr_p/DATA/IMERG/2001/",
+                        pathi_to_fortracc_clusters = "/glade/scratch/arehbein/SAAG/20yr_p/MCSs/OBS/SAIDAS_FORTRACC_Tb/clusters/",
+                        pathi_to_fortracc_txt = "/glade/scratch/arehbein/SAAG/20yr_p/MCSs/OBS/SAIDAS_FORTRACC_Tb/diag.txt/",
+                        pathi_to_masks_files = "/glade/scratch/arehbein/SAAG/20yr_p/MCSs/OBS/MCSs_MASKs/"
 ){
   # Loading the Pixel Area file for Observational GPM IMERG
   if(type == "Observational"){
