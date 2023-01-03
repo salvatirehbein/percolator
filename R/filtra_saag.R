@@ -115,12 +115,19 @@ filtra_saag <- function(xmin = -81.95,
   # --------------------------------------------------------------- END
   year_ini <- min(dt_fam$YEAR)
   year_fim <- max(dt_fam$YEAR)
-  mm_fim <- sprintf(max(df$MONTH), fmt = "%02d") # para o paper de comparacao entre os trackings foi "06"
+  #  mm_fim <- sprintf(max(df$MONTH), fmt = "%02d") # para o paper de comparacao entre os trackings foi "06"
+
+if(year_ini != year_fim){
   ndates <- length(c(list.files(path = pathi_to_fortracc_clusters,
                                 pattern = paste0("gs.", substr(year_ini, 3,4))),
                      list.files(path = pathi_to_fortracc_clusters,
                                 pattern = paste0("gs.", substr(year_fim, 3,4)))))
-  
+  }
+
+if(year_ini == year_fim){
+  ndates <- length(list.files(path = pathi_to_fortracc_clusters,
+                                pattern = paste0("gs.", substr(year_ini, 3,4))))}
+
   # 2) Obtain info about the precipitation under the cloud shield ####
   message("Obtain info about the precipitation under the cloud shield.\nThis is a slow process. Please be patient!!")
   message("(Please remember to use iterative job.)")
