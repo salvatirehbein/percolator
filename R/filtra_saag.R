@@ -251,7 +251,7 @@ if(year_ini == year_fim){
     ldf[[i]] <- df
     data.table::fwrite(df,
                        file = paste0(pathi_to_masks_files, 
-                                     "APAGAR_fam_SAAG_Tb_pcp_info_intermedio_", # funciona como bkp
+                                     "fam_SAAG_Tb_pcp_info_intermedio_", # funciona como bkp
                                      year_ini, "-", year_fim, ".csv"),
                        row.names = FALSE,
                        append = TRUE)
@@ -261,7 +261,7 @@ if(year_ini == year_fim){
   dt <- data.table::rbindlist(ldf)
   data.table::fwrite(dt,
                      file = paste0(pathi_to_masks_files, 
-                                   "APAGAR_fam_SAAG_Tb_pcp_info_intermedio_FINAL_", 
+                                   "fam_SAAG_Tb_pcp_info_intermedio_FINAL_", 
                                    year_ini, "-", year_fim, ".csv"),
                      row.names = FALSE)
   
@@ -411,7 +411,7 @@ if(year_ini == year_fim){
   
   dbin <- unlist(lbin)
   saveRDS(dbin, 
-          file = paste0(pathi_to_masks_files, "APAGAR_MCSs_SAAG_Masks_", year_ini, "-", year_fim, ".rds"))
+          file = paste0(pathi_to_masks_files, "MCSs_SAAG_Masks_", year_ini, "-", year_fim, ".rds"))
   
   
   # 4) Save Tb final Masks --> Write the netcdf ####
