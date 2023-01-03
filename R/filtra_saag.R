@@ -336,7 +336,9 @@ if(year_ini == year_fim){
   # nao da para simplesmente selecionar as datas de dt, pois se em um dia nao tiver MCSs, vai pular aquele horario
   # alterando de forma errada a sequencia de datas da lista a ser criada e consequentemente do netcdf.
   # ud <- sort(unique(dt$date))
-  ud <- sort(unique(seq(c(ISOdate(year_ini,6,1,0)), by = "hour", length.out = ndates))) #
+  mm_ini <- ifelse(year_ini == year_fim, "01", "06")
+  message("Is the initial month ", mm_ini, "?, if not, please stop me!")
+  ud <- sort(unique(seq(c(ISOdate(year_ini,mm_ini,1,0)), by = "hour", length.out = ndates))) #
   print(paste0("Início da sequencia de datas \n", head(ud)))
   print(paste0("Término da sequencia de datas \n", tail(ud)))
   
@@ -366,8 +368,18 @@ if(year_ini == year_fim){
     # print(paste0("SYS_ANT = ", SYS_ANT)) # pode ter mais de um SYS!!!
     
     # Reading binary from fortracc (presume all file exists)
+    cluster_name <-  paste0(pathi_to_fortracc_clusters,
+                           "gs.", yy, mm, dd, ".", hh, mn, "g.raw")
     cluster <- file(paste0(pathi_to_fortracc_clusters, 
                            "gs.", yy, mm, dd, ".", hh, mn, "g.raw"), "rb")
+    
+    ifile <- file.exists(cluster_name)     
+    
+    if(ifile != 1){
+      next
+    }
+    
+ 
     print(paste0("Lendo cluster: ", paste0(pathi_to_fortracc_clusters,"gs.", yy, mm, dd, ".", hh, mn, "g.raw")))
     v_bin <- readBin(cluster,
                      what = "integer",
