@@ -1,25 +1,23 @@
 Package: percolator
 Type: Package
-Title: Tools for ForTraCC
-Version: 0.6.0
-Date: 2022-11-10
+Title: ForTraCC Post-Processing Tool
+Version: 0.7.0
+Date: 2022-12-30
 Authors@R: c(person("Amanda", "Rehbein", 
   role = c("aut"), email = "amanda.rehbein@iag.usp.br", 
     comment = c(ORCID = "0000-0002-8714-7931")),
     person("Sergio", "Ibarra-Espinosa", 
   role = c("aut", "cre"), email = "sergio.ibarra@usp.br", 
     comment = c(ORCID = "0000-0002-3162-1905")))
-Description: Handle data from fortracc outputs.
+Description: Post-process Fortracc outputs.
 Imports: data.table, geosphere, sf, raster, MASS, ncdf4
 Suggests: cptcity
 License: GPL-3
 URL: https://github.com/salvatirehbein/percolator/
 BugReports: https://github.com/salvatirehbein/percolator/issues/
 Encoding: UTF-8
-RoxygenNote: 7.2.0
+RoxygenNote: 7.1.2
 NeedsCompilation: yes
-Packaged: 2019-05-08 09:32:22 UTC; amanda
+Packaged: 2019-05-08 09:32:22 UTC; 
 Author: Amanda Rehbein [aut] (<https://orcid.org/0000-0002-8714-7931>),
-  Sergio Ibarra-Espinosa [aut, cre]
-    (<https://orcid.org/0000-0002-3162-1905>)
-Maintainer: Sergio Ibarra-Espinosa <sergio.ibarra@usp.br>
+Maintainer: Amanda Rehbein <amanda.rehbein@usp.br>

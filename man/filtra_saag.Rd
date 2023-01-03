@@ -2,48 +2,50 @@
 % Please edit documentation in R/filtra_saag.R
 \name{filtra_saag}
 \alias{filtra_saag}
-\title{Obtain SAAG Deep Convection Working Group MCSs from ForTraCC outputs}
+\title{Filter Fortracc outputs to match MCSs definition from the SAAG Deep Convection Group}
 \usage{
 filtra_saag(
-  ifile,
-  ofile,
-  dx = 0.1 * 111.32,
-  dy = 0.1 * 111.32,
-  min_volume = 20000,
-  variable = "PCP",
-  experiment = "WRF SAAG 3yr",
-  period = "PRESENT",
-  growing_curve = FALSE
+  xmin = -81.95,
+  xmax = -34.05,
+  ymin = -55.95,
+  ymax = 12.95,
+  ncols = 480,
+  nlins = 690,
+  type = "Observational",
+  family_file,
+  pathi_to_prec_file = "/glade/work/arehbein/SAAG/3yr/IMERG/",
+ 
+    pathi_to_fortracc_clusters = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/clusters/",
+ 
+    pathi_to_fortracc_txt = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/diag.txt/",
+  pathi_to_masks_files = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/MCSs_MASKs/"
 )
 }
 \arguments{
-\item{ifile}{Character. Input filename. Generally as fam_WRF_PCP_WRF_YYYYMMDDHHMM.txt}
+\item{xmin}{Numeric. Western coord. of the native data. EX:
+ncdump merg_2010010100_4km-pixel.nc | less}
 
-\item{ofile}{Character. Output filename. Sugested: WRF_PCP_WRF_YYYY.csv}
+\item{xmax}{Numeric. Eastern coord. of the native data. EX:}
 
-\item{dx}{Numeric. Used to determine the area of the pixel. E.g.: 11.132 (default)}
+\item{ymin}{Numeric. Southern coord. of the native data. EX:}
 
-\item{dy}{Numeric. Used to determine the area of the pixel. E.g.: 11.132 (default)}
+\item{ymax}{Numeric. Northern coord. of the native data. EX:}
 
-\item{min_volume}{Numeric. Used for filter as determined in the SAAG DCWG Meeting 
-at April 13, 2022.}
+\item{ncols}{Integer. Relative to the native data.}
 
-\item{variable}{Character. "PCP" (default) or "Tb".}
+\item{nlins}{Integer. Relative to the native data.}
 
-\item{experiment}{Character. Sugested: "WRF SAAG 3yr" (default) or "WRF SAAG 20yr"}
+\item{type}{Character. Use "Observational" for GPM IMERG or "WRF" for WRF SAAG Simulations.}
 
-\item{period}{Character. Choose between "PRESENT" (default) or "FUTURE".}
-
-\item{growing_curve}{Boolean. If TRUE (default) families in which the
-genesis, maturation, and/or dissipation happened at the same time are removed.
-It is a filter.}
+\item{family_file}{Character. Name of the family file (including the path to it)
+obtained by Fortracc. Must be one starting with "fam_"}
 }
 \value{
-data.table
+netCDF
 }
 \description{
 This function filter the ForTraCC outputs to select MCSs that match 
-the criterias defined by the SAAG Deep Convection Working Group at April 13, 2022 meeting 
+the criteria defined by the SAAG Deep Convection Working Group at April 13, 2022 meeting 
 (https://ral.ucar.edu/projects/south-america-affinity-group-saag/deep-convection-working-group).  
 It also creates unique ID's for each family, obtain their lifespan, timeUTC, timeLT, 
 phases, distances, and total displacement. There is an option for filter 
@@ -59,7 +61,17 @@ The criterias are:
 }
 \examples{
 \dontrun{
-filtra_saag(ifile <- "/home/amanda/Documents/pos_doc/FAPESP/SAAG/diag.txt/fam_SAAG_PCP_WRF_201006052300.txt", 
-           ofile = "/home/amanda/Documents/pos_doc/FAPESP/SAAG/diag.txt/SAAG_PCP_WRF_2010.txt")
+filtra_saag(xmin = -81.95, # Coords. pegas do ncdump --> centroide da celula de grade
+            xmax = -34.05,
+            ymin = -55.95,
+            ymax = 12.95,
+            ncols = 480,
+            nlins = 690,
+            type = "Observational",
+            family_file = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/diag.txt/fam_SAAG_Tb_GPM_IMERG_1106_s2.txt",
+            pathi_to_prec_file = "/glade/work/arehbein/SAAG/3yr/IMERG/",
+            pathi_to_fortracc_clusters = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/clusters/",
+            pathi_to_fortracc_txt = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/diag.txt/",
+            pathi_to_masks_files = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/MCSs_MASKs/")
 }
 }
