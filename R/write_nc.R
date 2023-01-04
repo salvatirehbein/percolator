@@ -6,6 +6,7 @@
 #' @param year_ini Integer. First year of the tracking (used for writing filename outputs).
 #' @param year_fim Integer. First year of the tracking (used for writing filename outputs).
 #' @param mm_ini   String. First month of the tracking. It is important for writing the correct time attribute 
+#' @param ndates Integer. Number of timesteps ou dates. Used to write the netcdf.
 #' @return netCDF
 #' @importFrom data.table fread fwrite setorder
 #' @importFrom raster raster brick flip
@@ -21,6 +22,7 @@ write_nc <- function(type,
                      year_ini,
                      year_fim,
                      mm_ini,
+                     ndates,
                      pathi_to_prec_file,
                      pathi_to_masks_files){
 
