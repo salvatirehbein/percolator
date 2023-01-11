@@ -179,9 +179,11 @@ if(year_ini == year_fim){
       }
       
       if(type == "WRF"){
-        arq_nc <- paste0(pathi_to_prec_file,"tb_rainrate_", yyyy, "-", mm, "-", dd, "_", hh,":00.nc")
+        #arq_nc <- paste0(pathi_to_prec_file,"tb_rainrate_", yyyy, "-", mm, "-", dd, "_", hh,":00.nc") # for 3 yr
+        arq_nc <- paste0(pathi_to_prec_file,"tb_rainrate_", yyyy, "-", mm, "-", dd, "_", hh,".nc")
         nc <- ncdf4::nc_open(filename = arq_nc)
-        nc_pcp <- ncdf4::ncvar_get(nc = nc, varid = "rainrate")
+        # nc_pcp <- ncdf4::ncvar_get(nc = nc, varid = "rainrate") # for 3 yrs
+        nc_pcp <- ncdf4::ncvar_get(nc = nc, varid = "PREC_ACC_NC")
         ncdf4::nc_close(nc)
       } 
       
