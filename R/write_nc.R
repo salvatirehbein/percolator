@@ -38,8 +38,7 @@ ofile <- paste0(pathi_to_masks_files,
 
 # Obtain a reference file
 if(type == "Observational"){
-arq_nc <- paste0(pathi_to_prec_file, 
-                 "merg_", year_ini, mm_ini,"0100_4km-pixel.nc")
+arq_nc <- pathi_to_prec_file
 atributo <- "Observational Tb (GPM MERGEIR) MCSs Masks from ForTraCC-percolator"
 }
 if(type == "WRF"){
