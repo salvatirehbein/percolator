@@ -108,7 +108,7 @@ ncdf4::ncatt_put(nc = vars_file,
 # Add variables to the ofile
 ncdf4::ncvar_put(nc = vars_file,
                  varid = MCSs_MASKS,
-                 vals = dbin,
+                 vals = valores,
                  start =  c(1,1,1),
                  count = c(nlon, nlat, ntime))
 ncdf4::nc_close(nc = vars_file)
