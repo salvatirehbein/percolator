@@ -3,6 +3,7 @@
 #' @description Save the Tb MCSs mask files in netCDF format. 
 #'
 #' @param type Character. Use "Observational" for GPM IMERG or "WRF" for WRF SAAG Simulations.
+#' @param valores Integer. Vector of mask values (integers) to be written in the netCDF file.
 #' @param year_ini Integer. First year of the tracking (used for writing filename outputs).
 #' @param year_fim Integer. First year of the tracking (used for writing filename outputs).
 #' @param mm_ini   String. First month of the tracking. It is important for writing the correct time attribute 
@@ -14,11 +15,16 @@
 #' @export
 #' @examples \dontrun{
 #' write_nc(type = "Observational",
-#'          dt = dt,
+#'          valores=readRDS("MCSs_MASKs/MCSs_SAAG_Masks_2001-2001.rds"),
+#'          year_ini=2001,
+#'          year_fim=2001,
+#'          mm_ini="01",
+#'          ndates=8670,               
 #'          pathi_to_prec_file = "/glade/work/arehbein/SAAG/3yr/IMERG/",
 #'          pathi_to_masks_files = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/MCSs_MASKs/")
 #' }
 write_nc <- function(type,
+                     valores,
                      year_ini,
                      year_fim,
                      mm_ini,

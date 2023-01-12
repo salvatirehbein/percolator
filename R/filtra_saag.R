@@ -372,23 +372,20 @@ if(year_ini == year_fim){
     # Reading binary from fortracc (presume all file exists)
     cluster_name <-  paste0(pathi_to_fortracc_clusters,
                            "gs.", yy, mm, dd, ".", hh, mn, "g.raw")
-    cluster <- file(paste0(pathi_to_fortracc_clusters, 
-                           "gs.", yy, mm, dd, ".", hh, mn, "g.raw"), "rb")
-    
-    ifile <- file.exists(cluster_name)     
-    
-    if(ifile != 1){
-      next
-    }
-    
- 
+
+    if(file.exists(cluster_name)){
     print(paste0("Lendo cluster: ", paste0(pathi_to_fortracc_clusters,"gs.", yy, mm, dd, ".", hh, mn, "g.raw")))
+
+    cluster <- file(paste0(pathi_to_fortracc_clusters,
+                           "gs.", yy, mm, dd, ".", hh, mn, "g.raw"), "rb")
+
+
     v_bin <- readBin(cluster,
                      what = "integer",
                      n = ncols*nlins*2,
                      size = 2)
     close(cluster)
-    
+
     # criar data.table com o vetor do binario de clusters do fortracc e
     # adicionar id no caso merge mude a ordem
     df_bin <- data.table::data.table(id = 1:length(v_bin),
@@ -396,7 +393,7 @@ if(year_ini == year_fim){
     # digo quando tenho MCSs
     df_bin[, v_bin2 :=  ifelse(v_bin %in% SYS, v_bin, NA)] # Without merges
     #df_bin[, v_bin2 :=  ifelse(v_bin %in% SYS | v_bin %in% SYS_ANT, v_bin, NA)]
-    
+
     df_bin <- merge(x = df_bin,
                     y = di[, c("v_bin2", "FAMILY_new")],
                     by = "v_bin2",
@@ -409,7 +406,17 @@ if(year_ini == year_fim){
     dd1 <- dim(m_bin2)
     mt_bin2 <- m_bin2[1:dd1[1], dd1[2]:1]
     lbin[[l]] <- mt_bin2
+
+    } else {
+    m_bin2 <- matrix(NA,
+                     nrow = ncols, # precisa ser invertido!!
+                     ncol = nlins) # precisa ser invertido!!
+    dd1 <- dim(m_bin2)
+    mt_bin2 <- m_bin2[1:dd1[1], dd1[2]:1]
+    lbin[[l]] <- mt_bin2
+    }
   }
+
   
   dbin <- unlist(lbin)
   saveRDS(dbin, 
@@ -419,6 +426,7 @@ if(year_ini == year_fim){
   # 4) Save Tb final Masks --> Write the netcdf ####
   # source("export_mask.R")
   write_nc(type = type,
+           valores = dbin,
            year_ini = year_ini,
            year_fim = year_fim,
            ndates = ndates,
