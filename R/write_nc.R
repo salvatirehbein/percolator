@@ -34,7 +34,7 @@ write_nc <- function(type,
 
 sufixo <- ifelse(type == "Observational", "OBS", "WRF")
 ofile <- paste0(pathi_to_masks_files, 
-                "APAGAR_Rehbein_WY", year_fim, "_", sufixo,"_SAAG-MCS-mask-file.nc")
+                "Rehbein_WY", year_fim, "_", sufixo,"_SAAG-MCS-mask-file.nc")
 
 # Obtain a reference file
 if(type == "Observational"){
