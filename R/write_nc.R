@@ -43,7 +43,7 @@ atributo <- "Observational Tb (GPM MERGEIR) MCSs Masks from ForTraCC-percolator"
 }
 if(type == "WRF"){
 arq_nc <- paste0(pathi_to_prec_file, 
-                 "tb_rainrate_", year_ini, "-", mm_ini,"-02_12:00.nc")
+                 "tb_rainrate_", year_ini, "-", mm_ini,"-02_12.nc")
 atributo <- "WRF Tb MCSs Masks from ForTraCC-percolator"
 }
 nc <- ncdf4::nc_open(filename = arq_nc)
