@@ -163,7 +163,7 @@ if(year_ini == year_fim){
       yy <- substr(yyyy, 3,4)
       mm <- sprintf(df$MONTH[j], fmt = "%02d")
       dd <- sprintf(df$DAY[j], fmt = "%02d")
-      hh <- sprintf(df$HOUR[j], fmt = "%02d")
+      hh <- sprintf(round(df$HOUR[j]), fmt = "%02d")
       mn <- "00"
       print(paste0("FAMILY: ",  df$FAMILY[j]))
       print(paste0("Date: ",  yyyy, "-", mm, "-", dd, " ", hh, ":", mn))

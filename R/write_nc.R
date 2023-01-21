@@ -29,21 +29,20 @@ write_nc <- function(type,
                      year_fim,
                      mm_ini,
                      ndates,
-                     pathi_to_prec_file,
-                     pathi_to_masks_files){
+                     pathi_to_masks_files,
+                     prec_file = "DATA/IMERG/2001/merg_2001010100_4km-pixel.nc" ){
 
 sufixo <- ifelse(type == "Observational", "OBS", "WRF")
 ofile <- paste0(pathi_to_masks_files, 
                 "Rehbein_WY", year_fim, "_", sufixo,"_SAAG-MCS-mask-file.nc")
 
-# Obtain a reference file
+# Obtain a reference file for precipitation (must be from imerg because it has the lat long info)
+arq_nc <- prec_file
+
 if(type == "Observational"){
-arq_nc <- pathi_to_prec_file
 atributo <- "Observational Tb (GPM MERGEIR) MCSs Masks from ForTraCC-percolator"
 }
 if(type == "WRF"){
-arq_nc <- paste0(pathi_to_prec_file, 
-                 "tb_rainrate_", year_ini, "-", mm_ini,"-02_12.nc")
 atributo <- "WRF Tb MCSs Masks from ForTraCC-percolator"
 }
 nc <- ncdf4::nc_open(filename = arq_nc)
