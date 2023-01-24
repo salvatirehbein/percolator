@@ -433,7 +433,6 @@ if(year_ini == year_fim){
            year_fim = year_fim,
            ndates = ndates,
            mm_ini = mm_ini,
-           pathi_to_prec_file = pathi_to_prec_file,
            pathi_to_masks_files = pathi_to_prec_file)
   print("Fim!")
 }
