@@ -427,12 +427,34 @@ if(year_ini == year_fim){
   
   # 4) Save Tb final Masks --> Write the netcdf ####
   # source("export_mask.R")
-  write_nc(type = type,
-           valores = dbin,
-           year_ini = year_ini,
-           year_fim = year_fim,
-           ndates = ndates,
-           mm_ini = mm_ini,
-           pathi_to_masks_files = pathi_to_prec_file)
+  # write_nc(type = type,
+  #          valores = dbin,
+  #          year_ini = year_ini,
+  #          year_fim = year_fim,
+  #          ndates = ,
+  #          mm_ini = mm_ini,
+  #          pathi_to_masks_files = pathi_to_prec_file)
+  # For SAAG project:
+  if(type == "Observational"){
+    acronym  <- "OBS"
+  attribute <- "Observational Tb (GPM MERGEIR) MCSs Masks from ForTraCC-percolator"
+  }
+  if(type == "WRF"){
+    acronym  <- "WRF"
+  attribute <- "WRF Tb MCSs Masks from ForTraCC-percolator"
+  }
+  write_nc(attribute = attribute,
+           values = dbin,
+           date_ini = "2001-01-01 00:00:00",
+           ofile = paste0(pathi_to_masks_files,"Rehbein_WY",year_fim,"_",acronym,"_SAAG-MCS-mask-file.nc"),
+           ntime = ndates,
+           reference_file = "DATA/IMERG/2001/merg_2001010100_4km-pixel.nc",
+           unit = "",
+           longname = "Tb MCSs Masks",
+           variable_name = "mcs_mask",
+           author_name = "Amanda Rehbein",
+           institution_name = "Climate Group of Studies (GrEC)/University of Sao Paulo (USP)",
+           additional_comments = "Machado et al. (1998), Vila et al. (2008), Rehbein et al. (2020)")
+  
   print("Fim!")
 }

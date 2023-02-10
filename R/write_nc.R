@@ -16,19 +16,13 @@
 #' @importFrom ncdf4 nc_open nc_close ncvar_get
 #' @export
 #' @examples \dontrun{
-#' # For SAAG project:
-#' if(type == "Observational"){
-#' attribute <- "Observational Tb (GPM MERGEIR) MCSs Masks from ForTraCC-percolator"
-#' }
-#' if(type == "WRF"){
-#' attribute <- "WRF Tb MCSs Masks from ForTraCC-percolator"
-#' }
+#'
 #' }
 write_nc <- function(attribute,
                      values,
                      date_ini = "2001-01-01 00:00:00",
                      ofile = "ofile.nc",
-                     ndates,
+                     ntime,
                      reference_file = "DATA/IMERG/2001/merg_2001010100_4km-pixel.nc",
                      unit = "",
                      longname = "Tb MCSs Masks",
