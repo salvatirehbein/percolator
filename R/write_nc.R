@@ -1,113 +1,107 @@
-#' Save the MASK files from the filtra_saag function
+#' Save Network Common Data Form (NetCDF) files
 #' 
-#' @description Save the Tb MCSs mask files in netCDF format. 
+#' @description Export data with TIME, XLAT, XLONG dimensions to a netCDF file. 
 #'
-#' @param type Character. Use "Observational" for GPM IMERG or "WRF" for WRF SAAG Simulations.
-#' @param valores Integer. Vector of mask values (integers) to be written in the netCDF file.
-#' @param year_ini Integer. First year of the tracking (used for writing filename outputs).
-#' @param year_fim Integer. First year of the tracking (used for writing filename outputs).
-#' @param mm_ini   String. First month of the tracking. It is important for writing the correct time attribute 
-#' @param ndates Integer. Number of timesteps ou dates. Used to write the netcdf.
+#' @param attribute String. Any information to serve as an attribute. Ex:
+#' "Observational Tb (GPM MERGEIR) MCSs Masks from ForTraCC-percolator"
+#' @param values Vector with numeric or integer values to be written in the
+#'  netCDF file.
+#' @param date_ini String. First date for the TIME attribute. EX: "2001-01-01 00:00:00"
+#' @param ofile Character. Character with the name of the output file.
+#' @param ntime Integer. Number of timesteps for the TIME dimension. 
+#' EX: ntime = 365*24.
 #' @return netCDF
 #' @importFrom data.table fread fwrite setorder
 #' @importFrom raster raster brick flip
 #' @importFrom ncdf4 nc_open nc_close ncvar_get
 #' @export
 #' @examples \dontrun{
-#' write_nc(type = "Observational",
-#'          valores=readRDS("MCSs_MASKs/MCSs_SAAG_Masks_2001-2001.rds"),
-#'          year_ini=2001,
-#'          year_fim=2001,
-#'          mm_ini="01",
-#'          ndates=8670,               
-#'          pathi_to_prec_file = "/glade/work/arehbein/SAAG/3yr/IMERG/",
-#'          pathi_to_masks_files = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/MCSs_MASKs/")
+#' # For SAAG project:
+#' if(type == "Observational"){
+#' attribute <- "Observational Tb (GPM MERGEIR) MCSs Masks from ForTraCC-percolator"
 #' }
-write_nc <- function(type,
-                     valores,
-                     year_ini,
-                     year_fim,
-                     mm_ini,
+#' if(type == "WRF"){
+#' attribute <- "WRF Tb MCSs Masks from ForTraCC-percolator"
+#' }
+#' }
+write_nc <- function(attribute,
+                     values,
+                     date_ini = "2001-01-01 00:00:00",
+                     ofile = "ofile.nc",
                      ndates,
-                     pathi_to_masks_files,
-                     prec_file = "DATA/IMERG/2001/merg_2001010100_4km-pixel.nc" ){
-
-sufixo <- ifelse(type == "Observational", "OBS", "WRF")
-ofile <- paste0(pathi_to_masks_files, 
-                "Rehbein_WY", year_fim, "_", sufixo,"_SAAG-MCS-mask-file.nc")
-
-# Obtain a reference file for precipitation (must be from imerg because it has the lat long info)
-arq_nc <- prec_file
-
-if(type == "Observational"){
-atributo <- "Observational Tb (GPM MERGEIR) MCSs Masks from ForTraCC-percolator"
-}
-if(type == "WRF"){
-atributo <- "WRF Tb MCSs Masks from ForTraCC-percolator"
-}
-nc <- ncdf4::nc_open(filename = arq_nc)
-lon <- ncdf4::ncvar_get(nc = nc, varid = "lon")
-lat <- ncdf4::ncvar_get(nc = nc, varid = "lat")
-ncdf4::nc_close(nc)
-nlon <- length(lon)
-nlat <- length(lat)
-ntime <- ndates #length(unique(dt$date))
-# definition of dimensions
-TIME <- ncdf4::ncdim_def(name = "time",
-                         vals = 0:(ntime-1), #0:length(unique(dt$date)),
-                         units = paste0("hours since ",
-                                        year_ini, "-", mm_ini,"-01 00:00:00"),
-                         calendar = "proleptic_gregorian")
-XLONG <- ncdf4::ncdim_def(name = "lon",
-                          units = "degrees_east",
-                          vals = as.double(lon))
-XLAT <- ncdf4::ncdim_def(name = "lat",
-                         units = "degrees_north",
-                         vals = as.double(lat))
-
-# definition of variables
-MCSs_MASKS <- ncdf4::ncvar_def(name = "mcs_mask",
-                               units = "", 
-                               dim = list(XLONG, XLAT, TIME),
-                               longname="Tb MCSs Masks", 
-                               missval = NA) 
-
-vars_file <- ncdf4::nc_create(filename = ofile,
-                              vars = MCSs_MASKS)
-
-cat(paste("The file has", vars_file$nvars, "variables\n"))
-cat(paste("The file has", vars_file$ndim, "dimensions\n"))
-
-# Global attribute to the file when varid = 0
-# otherwise write the variable name
-ncdf4::ncatt_put(nc = vars_file,
-                 varid = 0, # 0 para o arquivo
-                 attname = "title",
-                 # attval = "Observational Tb (GPM MERGEIR) MCSs Masks from ForTraCC-percolator")
-                 # attval = "WRF Tb MCSs Masks from ForTraCC-percolator")
-                 attval = atributo)
-ncdf4::ncatt_put(nc = vars_file,
-                 varid = 0, # 0 para o arquivo
-                 attname = "Author",
-                 attval = "Amanda Rehbein")
-ncdf4::ncatt_put(nc = vars_file,
-                 varid = 0, # 0 para o arquivo
-                 attname = "institution",
-                 attval = "Climate Group of Studies (GrEC)/University of Sao Paulo (USP)")
-ncdf4::ncatt_put(nc = vars_file,
-                 varid = 0, # 0 para o arquivo
-                 attname = "history",
-                 attval = paste0("Created on ", Sys.time()))
-ncdf4::ncatt_put(nc = vars_file,
-                 varid = 0, # 0 para o arquivo
-                 attname = "references",
-                 attval = "Machado et al. (1998), Vila et al. (2008), Rehbein et al. (2020)")
-
-# Add variables to the ofile
-ncdf4::ncvar_put(nc = vars_file,
-                 varid = MCSs_MASKS,
-                 vals = valores,
-                 start =  c(1,1,1),
-                 count = c(nlon, nlat, ntime))
-ncdf4::nc_close(nc = vars_file)
+                     reference_file = "DATA/IMERG/2001/merg_2001010100_4km-pixel.nc",
+                     unit = "",
+                     longname = "Tb MCSs Masks",
+                     variable_name = "mcs_mask",
+                     author_name = "Amanda Rehbein",
+                     institution_name = "Climate Group of Studies (GrEC)/University of Sao Paulo (USP)",
+                     additional_comments = "Machado et al. (1998), Vila et al. (2008), Rehbein et al. (2020)"){
+  
+  
+  # Obtain a reference file for precipitation (must be from imerg because it has the lat long info)
+  arq_nc <- reference_file
+  
+  nc <- ncdf4::nc_open(filename = arq_nc)
+  lon <- ncdf4::ncvar_get(nc = nc, varid = "lon")
+  lat <- ncdf4::ncvar_get(nc = nc, varid = "lat")
+  ncdf4::nc_close(nc)
+  nlon <- length(lon)
+  nlat <- length(lat)
+  # definition of dimensions
+  TIME <- ncdf4::ncdim_def(name = "time",
+                           vals = 0:(ntime-1), #0:length(unique(dt$date)),
+                           units = paste0("hours since ", date_ini),
+                           calendar = "proleptic_gregorian")
+  XLONG <- ncdf4::ncdim_def(name = "lon",
+                            units = "degrees_east",
+                            vals = as.double(lon))
+  XLAT <- ncdf4::ncdim_def(name = "lat",
+                           units = "degrees_north",
+                           vals = as.double(lat))
+  
+  # definition of variables
+  var <- ncdf4::ncvar_def(name = variable_name,
+                          units = unit, 
+                          dim = list(XLONG, XLAT, TIME),
+                          longname=longname, 
+                          missval = NA) 
+  
+  vars_file <- ncdf4::nc_create(filename = ofile,
+                                vars = var)
+  
+  cat(paste("The file has", vars_file$nvars, "variables\n"))
+  cat(paste("The file has", vars_file$ndim, "dimensions\n"))
+  
+  # Global attribute to the file when varid = 0
+  # otherwise write the variable name
+  ncdf4::ncatt_put(nc = vars_file,
+                   varid = 0, # 0 para o arquivo
+                   attname = "title",
+                   # attval = "Observational Tb (GPM MERGEIR) MCSs Masks from ForTraCC-percolator")
+                   # attval = "WRF Tb MCSs Masks from ForTraCC-percolator")
+                   attval = attribute)
+  ncdf4::ncatt_put(nc = vars_file,
+                   varid = 0, # 0 para o arquivo
+                   attname = "Author",
+                   attval = author_name)
+  ncdf4::ncatt_put(nc = vars_file,
+                   varid = 0, # 0 para o arquivo
+                   attname = "institution",
+                   attval = institution_name)
+  ncdf4::ncatt_put(nc = vars_file,
+                   varid = 0, # 0 para o arquivo
+                   attname = "history",
+                   attval = paste0("Created on ", Sys.time()))
+  ncdf4::ncatt_put(nc = vars_file,
+                   varid = 0, # 0 para o arquivo
+                   attname = "references",
+                   attval = additional_comments)
+  
+  # Add variables to the ofile
+  ncdf4::ncvar_put(nc = vars_file,
+                   varid = var,
+                   vals = values,
+                   start =  c(1,1,1),
+                   count = c(nlon, nlat, ntime))
+  ncdf4::nc_close(nc = vars_file)
 }
