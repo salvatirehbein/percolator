@@ -24,6 +24,8 @@ write_nc <- function(attribute,
                      ofile = "ofile.nc",
                      ntime,
                      reference_file = "DATA/IMERG/2001/merg_2001010100_4km-pixel.nc",
+                     latname="lat",
+                     lonname="lon",
                      unit = "",
                      longname = "Tb MCSs Masks",
                      variable_name = "mcs_mask",
@@ -36,8 +38,8 @@ write_nc <- function(attribute,
   arq_nc <- reference_file
   
   nc <- ncdf4::nc_open(filename = arq_nc)
-  lon <- ncdf4::ncvar_get(nc = nc, varid = "lon")
-  lat <- ncdf4::ncvar_get(nc = nc, varid = "lat")
+  lon <- ncdf4::ncvar_get(nc = nc, varid = latname)
+  lat <- ncdf4::ncvar_get(nc = nc, varid = lonname)
   ncdf4::nc_close(nc)
   nlon <- length(lon)
   nlat <- length(lat)
