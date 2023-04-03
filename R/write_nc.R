@@ -38,8 +38,8 @@ write_nc <- function(attribute,
   arq_nc <- reference_file
   
   nc <- ncdf4::nc_open(filename = arq_nc)
-  lon <- ncdf4::ncvar_get(nc = nc, varid = latname)
-  lat <- ncdf4::ncvar_get(nc = nc, varid = lonname)
+  lon <- ncdf4::ncvar_get(nc = nc, varid = lonname)
+  lat <- ncdf4::ncvar_get(nc = nc, varid = latname)
   ncdf4::nc_close(nc)
   nlon <- length(lon)
   nlat <- length(lat)
