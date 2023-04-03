@@ -92,10 +92,6 @@ filtra_saag <- function(xmin = -81.95,
     
   }
   
-  
-  
-  
-  
   # 1) Filter Fortracc Tb #### 
   ffile <- family_file
   ## antigo source("tb_filter.R")
@@ -140,6 +136,8 @@ if(year_ini == year_fim){
     
     # Iterate FAMILY by FAMILY of each month
     df <- dt_fam[FAMILY == uf[i],]
+    
+    if (nrow(df) < 4) next
     
     # j index
     l_Tb_SIZE_km2 <- list()
