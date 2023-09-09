@@ -32,64 +32,41 @@
 #' @importFrom ncdf4 nc_open nc_close ncvar_get
 #' @export
 #' @examples \dontrun{
-
-#'             ymin = -55.95,
-#'             ymax = 12.95,
-#'             ncols = 480,
+#' filtra_saag(ncols = 480,
 #'             nlins = 690,
-#'             type = "Observational",
-#'             family_file = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/diag.txt/fam_SAAG_Tb_GPM_IMERG_1106_s2.txt",
-#'             pathi_to_prec_file = "/glade/work/arehbein/SAAG/3yr/IMERG/",
-#'             pathi_to_fortracc_clusters = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/clusters/",
-#'             pathi_to_fortracc_txt = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/SAIDAS_FORTRACC_Tb/diag.txt/",
-#'             pathi_to_masks_files = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/MCSs_MASKs/")
+#'             type = "WRF",
+#'             mm_ini="01",
+#'             family_file = paste0("MCSs/WRF_241K/SAIDAS_FORTRACC_Tb/diag.txt/fam_SAAG_Tb_GPM_IMERG_",yy, "12_s2.txt"),
+#'             pathi_to_prec_file = paste0("DATA/WRF/PREC_ACC_NC/"),
+#'             pathi_to_fortracc_clusters = "MCSs/WRF_241K/SAIDAS_FORTRACC_Tb/clusters/",
+#'             pathi_to_fortracc_txt = "MCSs/WRF_241K/SAIDAS_FORTRACC_Tb/diag.txt/",
+#'             pathi_to_masks_files = "MCSs/WRF_241K/MCSs_MASKs/"
 #' }
-filtra_saag <- function(xmin = -81.95,
-                        xmax = -34.05,
-                        ymin = -55.95,
-                        ymax = 12.95,
-                        ncols = 480,
+filtra_saag <- function(ncols = 480,
                         nlins = 690,
-                        type = "Observational",
-                        mm_ini,  
-                        family_file,
-                        pathi_to_prec_file = "/glade/scratch/arehbein/SAAG/20yr_p/DATA/IMERG/2001/",
-                        pathi_to_fortracc_clusters = "/glade/scratch/arehbein/SAAG/20yr_p/MCSs/OBS/SAIDAS_FORTRACC_Tb/clusters/",
-                        pathi_to_fortracc_txt = "/glade/scratch/arehbein/SAAG/20yr_p/MCSs/OBS/SAIDAS_FORTRACC_Tb/diag.txt/",
-                        pathi_to_masks_files = "/glade/scratch/arehbein/SAAG/20yr_p/MCSs/OBS/MCSs_MASKs/"
+                        type = "WRF",
+                        mm_ini="01",
+                        family_file = paste0("MCSs/WRF_241K/SAIDAS_FORTRACC_Tb/diag.txt/fam_SAAG_Tb_GPM_IMERG_",yy, "12_s2.txt"),
+                        pathi_to_prec_file = paste0("DATA/WRF/PREC_ACC_NC/"),
+                        pathi_to_fortracc_clusters = "MCSs/WRF_241K/SAIDAS_FORTRACC_Tb/clusters/",
+                        pathi_to_fortracc_txt = "MCSs/WRF_241K/SAIDAS_FORTRACC_Tb/diag.txt/",
+                        pathi_to_masks_files = "MCSs/WRF_241K/MCSs_MASKs/"
 ){
+  # Loading the Pixel Area file for Observational GPM IMERG
+  
   # Loading the Pixel Area file for Observational GPM IMERG
   if(type == "Observational"){
     nc_area <- ncdf4::nc_open(system.file("extdata/grid_area_saag/area_imerg_km2.nc", 
                                           package = "percolator"))
     area <- ncdf4::ncvar_get(nc_area, "Band1")
-    m_area <- matrix(area,
-                     nrow = ncols, # precisa ser invertido!!
-                     ncol = nlins) # precisa ser invertido!!
-    mt_area <- t(m_area)
-    r_area <- raster::flip(raster::raster(mt_area,
-                                          xmn = xmin,
-                                          xmx = xmax,
-                                          ymn = ymin,
-                                          ymx = ymax), direction = "y")  # north to south
-    # plot(r_area, main = "GPM IMERG pixel area (north to south)")
+    ncdf4::nc_close(nc_area)
   }
   
   if(type == "WRF"){
     nc_area <- ncdf4::nc_open(system.file("extdata/grid_area_saag/area_wrf_km2.nc", 
                                           package = "percolator"))
     area <- ncdf4::ncvar_get(nc_area, "Band1")
-    m_area <- matrix(area,
-                     nrow = ncols, # precisa ser invertido!!
-                     ncol = nlins) # precisa ser invertido!!
-    mt_area <- t(m_area)
-    r_area <- raster::flip(raster::raster(mt_area,
-                                          xmn = xmin,
-                                          xmx = xmax,
-                                          ymn = ymin,
-                                          ymx = ymax), direction = "y")
-    # plot(r_area, main = "WRF pixel area (north to south)")
-    
+    ncdf4::nc_close(nc_area)
   }
   
   # 1) Filter Fortracc Tb #### 
@@ -113,17 +90,16 @@ filtra_saag <- function(xmin = -81.95,
   year_fim <- max(dt_fam$YEAR)
   #  mm_fim <- sprintf(max(df$MONTH), fmt = "%02d") # para o paper de comparacao entre os trackings foi "06"
 
-if(year_ini != year_fim){
-  ndates <- length(c(list.files(path = pathi_to_fortracc_clusters,
-                                pattern = paste0("gs.", substr(year_ini, 3,4))),
-                     list.files(path = pathi_to_fortracc_clusters,
-                                pattern = paste0("gs.", substr(year_fim, 3,4)))))
+  file_output_name_tmp <- paste0(pathi_to_masks_files, 
+                                 "fam_SAAG_Tb_pcp_info_intermedio_", # funciona como bkp
+                                 year_ini, "-", year_fim, ".csv")
+  
+  if(file.exists(file_output_name_tmp)){
+    print(paste0("Removing old file: ", file_output_name_tmp))
+    file.remove(file_output_name_tmp)
   }
-
-if(year_ini == year_fim){
-  ndates <- length(list.files(path = pathi_to_fortracc_clusters,
-                                pattern = paste0("gs.", substr(year_ini, 3,4))))}
-
+  
+  
   # 2) Obtain info about the precipitation under the cloud shield ####
   message("Obtain info about the precipitation under the cloud shield.\nThis is a slow process. Please be patient!!")
   message("(Please remember to use iterative job.)")
@@ -137,7 +113,8 @@ if(year_ini == year_fim){
     # Iterate FAMILY by FAMILY of each month
     df <- dt_fam[FAMILY == uf[i],]
     
-    if (nrow(df) < 4) next
+    #if(nrow(df) < 4) next
+    
     
     # j index
     l_Tb_SIZE_km2 <- list()
@@ -145,7 +122,7 @@ if(year_ini == year_fim){
     lmax <- list()
     larea_pcp <- list()
     lvol <- list()
-      
+    
     for(j in seq_along(df$FAMILY)) {
       
       # Iterar time by time in each FAMILY    
@@ -172,7 +149,7 @@ if(year_ini == year_fim){
         arq_nc <- paste0(pathi_to_prec_file, 
                          "merg_", yyyy, mm, dd, hh,"_4km-pixel.nc")
         nc <- ncdf4::nc_open(filename = arq_nc)
-        nc_pcp <- ncdf4::ncvar_get(nc = nc, varid = "precipitationCal")[,,1]
+        m_pcp <- ncdf4::ncvar_get(nc = nc, varid = "precipitationCal")[,,1]
         ncdf4::nc_close(nc)
       }
       
@@ -181,68 +158,61 @@ if(year_ini == year_fim){
         arq_nc <- paste0(pathi_to_prec_file,"tb_rainrate_", yyyy, "-", mm, "-", dd, "_", hh,".nc")
         nc <- ncdf4::nc_open(filename = arq_nc)
         # nc_pcp <- ncdf4::ncvar_get(nc = nc, varid = "rainrate") # for 3 yrs
-        nc_pcp <- ncdf4::ncvar_get(nc = nc, varid = "PREC_ACC_NC")
+        m_pcp <- ncdf4::ncvar_get(nc = nc, varid = "PREC_ACC_NC")
         ncdf4::nc_close(nc)
-      } 
-      
-      m_pcp <- matrix(as.integer(nc_pcp),
-                      nrow = ncols, # precisa ser invertido!!
-                      ncol = nlins) # precisa ser invertido!!
-      mt_pcp <- t(m_pcp)
-      r_pcp <- raster::flip(raster::raster(mt_pcp,
-                                           xmn = xmin,
-                                           xmx = xmax,
-                                           ymn = ymin,
-                                           ymx = ymax), direction = "y")  # north to south
+      }
       
       # Open Tb clusters generated by Fortracc
       cluster_name <- list.files(path=pathi_to_fortracc_clusters,
-                                pattern = paste0("gs.", yy, mm, dd, ".", hh), full.name=T)
+                                 pattern = paste0("gs.", yy, mm, dd, ".", hh), full.name=T)
       
-     cluster <- file(cluster_name[1], "rb")
-      v_bin <- readBin(cluster,
-                       what = "integer",
-                       n = ncols*nlins*2,
-                       size = 2)
-      close(cluster)
+      if(length(cluster_name) != 0){
+        cluster <- file(cluster_name[1], "rb")
+        v_bin <- readBin(cluster,
+                         what = "integer",
+                         n = ncols*nlins*2,
+                         size = 2)
+        close(cluster)
+      } else {
+        v_bin <- NA
+      }
+      
       m_bin <- matrix(v_bin,
                       nrow = ncols, # precisa ser invertido!!
                       ncol = nlins) # precisa ser invertido!!
-      mt_bin <- t(m_bin)
-      r_bin <- raster::raster(mt_bin,
-                              xmn = xmin,
-                              xmx = xmax,
-                              ymn = ymin,
-                              ymx = ymax)                       # north to south
-      # Calculate the area in km2 of the tb cluster
-      rtb <- r_bin
-      rtb[] <- ifelse(rtb[] == SYS, r_area[], NA) # without the merging systems
+      m_bin <- m_bin[,690:1]
+      
+      # calculate the area of the system
+      rtb <- m_bin
+      rtb <- ifelse(rtb == SYS, area, NA) # without the merging systems
+      # filled.contour(rtb)
+      
       # rtb[] <- ifelse(rtb[] == SYS | rtb[] %in% SYS_ANT, r_area[], NA) 
-      Tb_SIZE_km2 <- sum(rtb[], na.rm = T)
+      Tb_SIZE_km2 <- sum(rtb, na.rm = T)
       l_Tb_SIZE_km2[[j]] <- Tb_SIZE_km2
       
       # Calculate the Preciptiation volume ####
-      r3 <- r_bin # creating raster for precipitation identical to Tb cluster raster
+      r3 <- m_bin # creating raster for precipitation identical to Tb cluster raster
       
       # selects precipitation below the Tb cluster numbered as SYS in the 
       # remaining FAMILY in fam.txt after SAAG Tb Criterias.
       # Therefore, r3 is a raster with only one (or more in the merging cases) precipitation "cluster"
-      r3[] <- ifelse(r3[] == SYS, r_pcp[], NA) # without the merging systems
+      r3 <- ifelse(r3 == SYS, m_pcp, NA) # without the merging systems
       #r3[] <- ifelse(r3[] == SYS | r3[] %in% SYS_ANT, r_pcp[], NA) 
-
-
+      
+      
       # Save statistics of each precipitation clusters. 
       # They will be used for filtering according to SAAG PCP Criteria. 
-      lsum[[j]] <- sum(r3[], na.rm = TRUE)
-      lmax[[j]] <- max(r3[], na.rm = TRUE)
+      lsum[[j]] <- sum(r3, na.rm = TRUE)
+      lmax[[j]] <- max(r3, na.rm = TRUE)
       # obtaining precipitation volume --> integrate the multiplication of the 
       # pcp value in each pixel by the area of each pixel
-      vol_in_the_px <- r3 * r_area
-      lvol[[j]] <- sum(vol_in_the_px[], na.rm = TRUE)
+      vol_in_the_px <- r3 * area
+      lvol[[j]] <- sum(vol_in_the_px, na.rm = TRUE)
       # calculate the total area occupied by precipitation under the cloud shield
       r4 <- r3
-      r4[] <- ifelse(!is.na(r4[]), r_area[], NA)
-      larea_pcp[[j]] <- sum(r4[], na.rm = TRUE)
+      r4 <- ifelse(!is.na(r4), area, NA)
+      larea_pcp[[j]] <- sum(r4, na.rm = TRUE)
     }
     df$Tb_SIZE_km2 <- unlist(l_Tb_SIZE_km2)
     df$pcp_sum <- unlist(lsum)
@@ -252,39 +222,26 @@ if(year_ini == year_fim){
     
     ldf[[i]] <- df
     data.table::fwrite(df,
-                       file = paste0(pathi_to_masks_files, 
-                                     "fam_SAAG_Tb_pcp_info_intermedio_", # funciona como bkp
-                                     year_ini, "-", year_fim, ".csv"),
+                       file = file_output_name_tmp,
                        row.names = FALSE,
                        append = TRUE)
     gc()
   }
   
   dt <- data.table::rbindlist(ldf)
+  file_output_name <- paste0(pathi_to_masks_files, 
+                             "fam_SAAG_Tb_pcp_info_intermedio_FINAL_", 
+                             year_ini, "-", year_fim, ".csv")
+  if(file.exists(file_output_name)){
+    print(paste0("Removing old file: ", file_output_name))
+    file.remove(file_output_name)
+  }
+  
   data.table::fwrite(dt,
-                     file = paste0(pathi_to_masks_files, 
-                                   "fam_SAAG_Tb_pcp_info_intermedio_FINAL_", 
-                                   year_ini, "-", year_fim, ".csv"),
+                     file = file_output_name,
                      row.names = FALSE)
   
-  
-  #rm(list = ls()); gc()
-  
-  # pegos do ncdump --> centroide da celula de grade
-  #xmin <- -81.95
-  #xmax <- -34.05
-  #ymin <- -55.95
-  #ymax <- 12.95
-  #ncols <- 480
-  #nlins <- 690
-  #pathi <- "/glade/work/arehbein/SAAG/3yr/MCSs/WRF/"
-  #year_ini <- 2011
-  #year_fim <- 2011
-  #ndates <- 9480 # ((7*31)+(5*30)+28)*24
-  
-  #dt <- fread(paste0(pathi, "MCSs_MASKs/fam_SAAG_Tb_pcp_info_intermedio_",
-  #                   year_ini, "-", year_fim, ".csv"))
-  
+ 
   print(paste0("# FAMILIES (before filter): ", length(unique(dt$FAMILY))))
   
   # SAAG Criteria for Tb by size ####
@@ -329,7 +286,7 @@ if(year_ini == year_fim){
                     sprintf(dt$HOUR, fmt = "%02d"))
   data.table::fwrite(dt,
                      paste0(pathi_to_masks_files, "MCSs_SAAG_",
-                            year_ini, "-", year_fim, ".csv"), row.names = FALSE)
+                            year_ini, "-", year_fim, ".csv"), row.names = FALSE, append = FALSE)
   
   gc()
   lbin <- list()
@@ -338,21 +295,24 @@ if(year_ini == year_fim){
   # nao da para simplesmente selecionar as datas de dt, pois se em um dia nao tiver MCSs, vai pular aquele horario
   # alterando de forma errada a sequencia de datas da lista a ser criada e consequentemente do netcdf.
   # ud <- sort(unique(dt$date))
-
+  
+  ndates <- ifelse(year_ini %in% c(1996, 2000, 2004, 2008, 2012, 2016, 2020, 2024), 
+                   8784, 8760)
+  
   message("Is the initial month ", mm_ini, "?, if not, please stop me!")
   ud <- sort(unique(seq(c(ISOdate(year_ini,mm_ini,1,0)), by = "hour", length.out = ndates))) #
+  ud2 <- strftime(ud, format = "%Y%m%d%H", tz = "UTC")
   print(paste0("Início da sequencia de datas \n", head(ud)))
   print(paste0("Término da sequencia de datas \n", tail(ud)))
   
   lbin <- list()
   for(l in seq_along(ud)) {
-    yy <- substr(ud[l], 3, 4)
-    mm <- substr(ud[l], 6, 7)
-    dd <- substr(ud[l], 9, 10)
-    #  hh <- substr(ud[l], 9, 10)
-    hh <- ifelse(substr(ud[l], 12, 13) == "", "00", substr(ud[l], 12, 13))
+    yy <- substr(ud2[l], 3, 4)
+    mm <- substr(ud2[l], 5, 6)
+    dd <- substr(ud2[l], 7, 8)
+    hh <- substr(ud2[l], 9, 10) 
     mn <- "00"
-    dt_date <- paste0(substr(ud[l], 1, 4), mm, dd, hh)
+    dt_date <- paste0(substr(ud2[l], 1, 4), mm, dd, hh)
     
     # Select the dt lines for this date
     
@@ -371,88 +331,68 @@ if(year_ini == year_fim){
     
     # Reading binary from fortracc (presume all file exists)
     cluster_name <-  paste0(pathi_to_fortracc_clusters,
-                           "gs.", yy, mm, dd, ".", hh, mn, "g.raw")
-
+                            "gs.", yy, mm, dd, ".", hh, mn, "g.raw")
+    
     if(file.exists(cluster_name)){
-    print(paste0("Lendo cluster: ", paste0(pathi_to_fortracc_clusters,"gs.", yy, mm, dd, ".", hh, mn, "g.raw")))
-
-    cluster <- file(paste0(pathi_to_fortracc_clusters,
-                           "gs.", yy, mm, dd, ".", hh, mn, "g.raw"), "rb")
-
-
-    v_bin <- readBin(cluster,
-                     what = "integer",
-                     n = ncols*nlins*2,
-                     size = 2)
-    close(cluster)
-
-    # criar data.table com o vetor do binario de clusters do fortracc e
-    # adicionar id no caso merge mude a ordem
-    df_bin <- data.table::data.table(id = 1:length(v_bin),
-                         v_bin = v_bin)
-    # digo quando tenho MCSs
-    df_bin[, v_bin2 :=  ifelse(v_bin %in% SYS, v_bin, NA)] # Without merges
-    #df_bin[, v_bin2 :=  ifelse(v_bin %in% SYS | v_bin %in% SYS_ANT, v_bin, NA)]
-
-    df_bin <- merge(x = df_bin,
-                    y = di[, c("v_bin2", "FAMILY_new")],
-                    by = "v_bin2",
-                    all.x = TRUE)
-    data.table::setorderv(df_bin, "id")
-    # df_bin[!is.na(FAMILY_new)]
-    m_bin2 <- matrix(df_bin$FAMILY_new,
-                     nrow = ncols, # precisa ser invertido!!
-                     ncol = nlins) # precisa ser invertido!!
-    dd1 <- dim(m_bin2)
-    mt_bin2 <- m_bin2[1:dd1[1], dd1[2]:1]
-    lbin[[l]] <- mt_bin2
-
+      print(paste0("Lendo cluster: ", paste0(pathi_to_fortracc_clusters,"gs.", yy, mm, dd, ".", hh, mn, "g.raw")))
+      
+      cluster <- file(paste0(pathi_to_fortracc_clusters,
+                             "gs.", yy, mm, dd, ".", hh, mn, "g.raw"), "rb")
+      
+      
+      v_bin <- readBin(cluster,
+                       what = "integer",
+                       n = ncols*nlins*2,
+                       size = 2)
+      close(cluster)
+      
+      # criar data.table com o vetor do binario de clusters do fortracc e
+      # adicionar id no caso merge mude a ordem
+      df_bin <- data.table::data.table(id = 1:length(v_bin),
+                                       v_bin = v_bin)
+      # digo quando tenho MCSs
+      df_bin[, v_bin2 :=  ifelse(v_bin %in% SYS, v_bin, NA)] # Without merges
+      #df_bin[, v_bin2 :=  ifelse(v_bin %in% SYS | v_bin %in% SYS_ANT, v_bin, NA)]
+      
+      df_bin <- merge(x = df_bin,
+                      y = di[, c("v_bin2", "FAMILY_new")],
+                      by = "v_bin2",
+                      all.x = TRUE)
+      data.table::setorderv(df_bin, "id")
+      # df_bin[!is.na(FAMILY_new)]
+      m_bin2 <- matrix(df_bin$FAMILY_new,
+                       nrow = ncols, # precisa ser invertido!!
+                       ncol = nlins) # precisa ser invertido!!
+      dd1 <- dim(m_bin2)
+      mt_bin2 <- m_bin2[1:dd1[1], dd1[2]:1]
+      lbin[[l]] <- mt_bin2
+      
     } else {
-    m_bin2 <- matrix(NA,
-                     nrow = ncols, # precisa ser invertido!!
-                     ncol = nlins) # precisa ser invertido!!
-    dd1 <- dim(m_bin2)
-    mt_bin2 <- m_bin2[1:dd1[1], dd1[2]:1]
-    lbin[[l]] <- mt_bin2
+      m_bin2 <- matrix(NA,
+                       nrow = ncols, # precisa ser invertido!!
+                       ncol = nlins) # precisa ser invertido!!
+      dd1 <- dim(m_bin2)
+      mt_bin2 <- m_bin2[1:dd1[1], dd1[2]:1]
+      lbin[[l]] <- mt_bin2
     }
   }
-
+  
   
   dbin <- unlist(lbin)
+  
+  file_rds <- paste0(pathi_to_masks_files, 
+                     "MCSs_SAAG_Masks_", year_ini, "-", year_fim, ".rds")
+
+  if(file.exists(file_rds)){
+    print(paste0("Removing old file: ", file_rds))
+    file.remove(file_rds)
+  }
+  
+  
   saveRDS(dbin, 
           file = paste0(pathi_to_masks_files, "MCSs_SAAG_Masks_", year_ini, "-", year_fim, ".rds"))
   
   
-  # 4) Save Tb final Masks --> Write the netcdf ####
-  # source("export_mask.R")
-  # write_nc(type = type,
-  #          valores = dbin,
-  #          year_ini = year_ini,
-  #          year_fim = year_fim,
-  #          ndates = ,
-  #          mm_ini = mm_ini,
-  #          pathi_to_masks_files = pathi_to_prec_file)
-  # For SAAG project:
-  if(type == "Observational"){
-    acronym  <- "OBS"
-  attribute <- "Observational Tb (GPM MERGEIR) MCSs Masks from ForTraCC-percolator"
-  }
-  if(type == "WRF"){
-    acronym  <- "WRF"
-  attribute <- "WRF Tb MCSs Masks from ForTraCC-percolator"
-  }
-  write_nc(attribute = attribute,
-           values = dbin,
-           date_ini = "2001-01-01 00:00:00",
-           ofile = paste0(pathi_to_masks_files,"Rehbein_WY",year_fim,"_",acronym,"_SAAG-MCS-mask-file.nc"),
-           ntime = ndates,
-           reference_file = "DATA/IMERG/2001/merg_2001010100_4km-pixel.nc",
-           unit = "",
-           longname = "Tb MCSs Masks",
-           variable_name = "mcs_mask",
-           author_name = "Amanda Rehbein",
-           institution_name = "Climate Group of Studies (GrEC)/University of Sao Paulo (USP)",
-           additional_comments = "Machado et al. (1998), Vila et al. (2008), Rehbein et al. (2020)")
   
-  print("Fim!")
+  print("End of the first part! Need to run write_nc for generating the Mask files.")
 }
