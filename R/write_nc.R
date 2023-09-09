@@ -10,8 +10,7 @@
 #' @param ofile Character. Character with the name of the output file.
 #' @param ntime Integer. Number of timesteps for the TIME dimension. 
 #' EX: ntime = 365*24.
-#' @param compression_level By default is 4. It is used to specify data compression level.
-#' @param shuffle By default is TRUE to enable shuffle compression filter (data compression).
+#' @param precision is the prec in ?ncvar_get. 
 #' @return netCDF
 #' @importFrom data.table fread fwrite setorder
 #' @importFrom raster raster brick flip
@@ -29,10 +28,9 @@ write_nc <- function(attribute,
                      latname="lat",
                      lonname="lon",
                      unit = "",
+                     precision = "double",
                      longname = "Tb MCSs Masks",
                      variable_name = "mcs_mask",
-                     compression_level = 4,
-                     shuffle = TRUE,
                      author_name = "Amanda Rehbein",
                      institution_name = "Climate Group of Studies (GrEC)/University of Sao Paulo (USP)",
                      additional_comments = "Machado et al. (1998), Vila et al. (2008), Rehbein et al. (2020)"){
@@ -64,9 +62,8 @@ write_nc <- function(attribute,
                           units = unit, 
                           dim = list(XLONG, XLAT, TIME),
                           longname=longname, 
-                          missval = NA,
-                          storage = list(compression_level = compression_level,
-                                         shuffle = compression_shuffle)) 
+                          prec = precision, 
+                          missval = NA) 
   
   vars_file <- ncdf4::nc_create(filename = ofile,
                                 vars = var)
