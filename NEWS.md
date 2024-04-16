@@ -3,9 +3,14 @@ NEWS
 
 ## TODO
 
-- adicionar uma opcao para digitar a fonte caso esquece-la na funcao pre_filter
-- filtra_d usar funcao em C++ para calc distancias
+- add calc distancias
 - Revisar Ingles e terminar de traduzir
+
+### percolator 1.0.0 (Release date: 2022-09-28)
+- Removed obsolete packages (filtra_a, filtra_b, filtra_c, filtra_d,
+  src/ --> all the fortran stuff, pre_filter, read_pcp, read_tb, filtra_extensions)
+- fixed filtra_saag bugs
+- worked on documentation
 
 ### percolator 0.5.0 (Release date: 2022-09-28)
 - Substituted filtra_saag function by ...

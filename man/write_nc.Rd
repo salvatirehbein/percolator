@@ -2,26 +2,51 @@
 % Please edit documentation in R/write_nc.R
 \name{write_nc}
 \alias{write_nc}
-\title{Save the MASK files from the filtra_saag function}
+\title{Save Network Common Data Form (NetCDF) files}
 \usage{
-write_nc(type, dt, pathi_to_prec_file, pathi_to_masks_files)
+write_nc(
+  attribute,
+  values,
+  date_ini = "2001-01-01 00:00:00",
+  ofile = "ofile.nc",
+  ntime,
+  reference_file = system.file("extdata", "merg_2011010100_4km-pixel.nc", package =
+    "percolator"),
+  latname = "lat",
+  lonname = "lon",
+  unit = "",
+  longname = "Tb MCSs Masks",
+  variable_name = "mcs_mask",
+  author_name = "Amanda Rehbein",
+  institution_name = "Climate Group of Studies (GrEC)/University of Sao Paulo (USP)",
+  additional_comments =
+    "Machado et al. (1998), Vila et al. (2008), Rehbein et al. (2020)"
+)
 }
 \arguments{
-\item{type}{Character. Use "Observational" for GPM IMERG or "WRF" for WRF SAAG Simulations.}
+\item{attribute}{String. Any information to serve as an attribute. Ex:
+"Observational Tb (GPM MERGEIR) MCSs Masks from ForTraCC-percolator"}
 
-\item{dt}{data.table containing the information of date and years}
+\item{values}{Vector with numeric or integer values to be written in the
+netCDF file.}
+
+\item{date_ini}{String. First date for the TIME attribute. EX: "2001-01-01 00:00:00"}
+
+\item{ofile}{Character. Character with the name of the output file.}
+
+\item{ntime}{Integer. Number of timesteps for the TIME dimension. 
+EX: ntime = 365*24.}
+
+\item{precision}{is the prec in ?ncvar_get.}
 }
 \value{
 netCDF
 }
 \description{
-Save the Tb MCSs mask files in netCDF format.
+Export data with TIME, XLAT, XLONG dimensions to a netCDF file.
 }
 \examples{
 \dontrun{
-write_nc(type = "Observational",
-         dt = dt,
-         pathi_to_prec_file = "/glade/work/arehbein/SAAG/3yr/IMERG/",
-         pathi_to_masks_files = "/glade/work/arehbein/SAAG/3yr/MCSs/OBS/MCSs_MASKs/")
+
 }
 }

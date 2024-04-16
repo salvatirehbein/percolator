@@ -1,28 +1,74 @@
-Mesoscale convective systems (MCSs) are very large and complex cloud system that causes huge amount of precipitation and severe weather globally. They can be identified and tracked using algorithms, such as the Forecasting and Tracking the evolution of Cloud Clustes (ForTraCC; Machado et al., 1998; Vila et al., 2008).
+# percolator
+**percolator** is a post-processing tool for the Forecasting and Tracking the 
+evolution of cloud clusters (ForTraCC) algorithm output.
 
-ForTraCC ingests matrix with brightness temperature from satellite images, precipitation, or reflectivity from weather radar for the identification and tracking of cloud clusters. It returns a text file with complex structure for reading in R, for instance, with two headers by family of cloud clusters, a body that contains the majority information, and a tail. Each block with all the information above (headers, body, and tail) describes one family, indicated in the first header. Each line of the body contain the cloud cluster information regarding one timestamp.
+## Introduction
 
-Due to the complexity of the block, the functions read_pcp and read_tb were created. DESCREVER ESSAS DUAS FUNCOES:
+**Mesoscale convective systems (MCSs)** are massive and complex cloud system that 
+generate substantial precipitation and severe weather events worldwide. 
+Algorithms such as Forecasting and Tracking the Evolution of Cloud Clusters or **ForTraCC** ([Machado et al., 1998](https://journals.ametsoc.org/view/journals/mwre/126/6/1520-0493_1998_126_1630_lcvomc_2.0.co_2.xml); [Vila et al., 2008](https://journals.ametsoc.org/view/journals/wefo/23/2/2007waf2006121_1.xml)) have proven effective in identifying and tracking MCSs.
 
-This package organizes a serie of functions for filtering ForTraCC data, allowing to obtain MCSs. 
+ForTraCC characterizes each family of pixel clusters using predefined thresholds,
+necessitating a post-decision process to determine whether these families 
+represent MCSs or another type of system. 
 
-The explanations regarding their use are better described by Rehbein et al. (2017;2019), and summarized below. These functions must be runned in the following order. There are a punch of options that allows one passing the functions without filter anything. 
+This package organizes the scripts used in the ForTraCC post-processing to match the criteria defined by SAAG DCG and described in [Prein et al., 2023](https://essopenarchive.org/users/489196/articles/673630-km-scale-simulations-of-mesoscale-convective-systems-mcss-over-south-america-a-feature-tracker-intercomparison) and [Rehbein et al., 2024]().
 
-1) filtra_a: filter MCSs according their genesis (new MCSs or from a split, for instance) and lifespan.
 
-2) filtra_b: filter MCSs by the area of interest (aoi) and classify them among continental or oceanic.
+## ForTraCC Post-Processing Results: Summary of Variables
+ForTraCC assume an MCS as a FAMILY of convective systems (CS) along the time. 
+This means that multiple convective systems observed over time can be grouped 
+together as a single MCS family. 
 
-3) filtra_c: filter MCSs by their extention and lifecycle. As in Sakamoto et al. (2011), only those MCSs that had a spontaneous genesis, followed by growing until their maturation (largest extention), and decreasing extention are selected. This allows studying MCSs along their lifecycles. 
 
-4) filtra_d: filter very long/not real distances. In some ocasions, MCSs that are not related are conected among themselves. This function calculates the distances between one timestep and other, and then filter those above an unrealistic threshold.
+The resultant dataset (csv file) has the Variables described below:
 
-References:
-- Machado et al. (1998)
+|-------------------|----------------------|----------------------------------------------------|
+| Category          | Variable             | Description                                        |
+|-------------------|----------------------|----------------------------------------------------|
+| Identification    | ID                   | Unique identifier of the MCSs                      |
+|                   | CLASSIF              | Classification of the MCS genesis                  |
+|                   | CLA                  | Classification of the MCS cluster                  |
+|-------------------|----------------------|----------------------------------------------------|
+| Time related      | YEAR                 | Year                                               |
+|                   | MONTH                | Month                                              |
+|                   | DAY                  | Day                                                |
+|                   | HOUR                 | Hour                                               |
+|                   | date                 | Date (YYYYMMDDHH)                                  |
+|                   | timeUTC              | Coordinated Universal Time (UTC)                   |
+|                   | time_zone            | Time zone of the MCS`s center of mass              |
+|                   | timeLT               | Local time                                         |
+|                   | lifespan             | Total lifespan of the cluster (hours)              |
+|                   | phase_size           | Phase calculated based on the *SIZE*               |
+|                   | phase_lifespan       | Phase calculated based on the *lifespan*           |
+|-------------------|----------------------|----------------------------------------------------|
+| Geolocation       | XLAT                 | Latitude coordinate of the cluster center of mass  |
+|                   | XLON                 | Longitude coordinate of the cluster center of mass |
+|-------------------|----------------------|----------------------------------------------------|
+| Kinetics          | VEL                  | Cluster center of mass speed displacement (km/h)   |
+|                   | DIR                  | Direction of movement of the cluster               |
+|                   | INCLI                | Inclination of the cluster                         |
+|                   | ECCE                 | Eccentricity of the cluster                        |
+|-------------------|----------------------|----------------------------------------------------|
+| Extensions        | SIZE                 | Size of the cluster (pixels)                       |
+|                   | DSIZE                | Expansion rate of the cluster (pixels/h)           |
+|                   | Tb_SIZE_km2          | Size of the cluster (km2)                          |
+|-------------------|----------------------|----------------------------------------------------|
+| Radiative         | TMED                 | Mean temperature of the cluster  (K)               |
+| properties        | DTMED                | Temperature rate change (K)                        |
+|                   | TMIN                 | Minimum temperature of the cluster (K)             |
+|                   | DTMIN                | Minimum temperature rate of change (K)             |
+|                   | TMIN9                | Minimum temperature of the kernel of 9 pixels (K)  |
+|                   | DTMIN9               | DTMIN of the kernel of 9 pixels (K)                |
+|-------------------|----------------------|----------------------------------------------------|
+| Intensity         | pcp_sum              | Total precipitation below the cloud shield (mm)    |
+|                   | pcp_max              | Maximum precipitation below the cloud shield (mm)  |
+|                   | pcp_total_vol        | Total volume of precipitation  below the cloud     |
+|                   |                      | shield (mm)                                        |
+|                   | pcp_total_area       | Total area covered by precipitation below the.     | 
+|                   |                      | cloud| shield (km2)                                |
+|-------------------|----------------------|----------------------------------------------------|
+| Quality control   | MISSINGS             | If original data is corrupted 1, otherwise 0       |
+|-------------------|----------------------|----------------------------------------------------|
 
-- Rehbein et al. (2017)
 
-- Rehbein et al. (2019)
-
-- Sakamoto et al. (2011)
-
-- Vila et al. (2008)
