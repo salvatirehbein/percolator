@@ -134,7 +134,7 @@ get_mcs_masks <- function(year_start,
   # Write the filtered data to a CSV file
   data.table::fwrite(dt, ofile_csv, row.names = FALSE)
   print(paste0("Filtered data saved to CSV file: ", ofile_csv))
-  rm(fileo)
+  
   
   # INICIO DA SEGUNDA PARTE: SELECIONAR AS MASCARAS ####
 

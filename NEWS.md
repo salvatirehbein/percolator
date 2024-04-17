@@ -3,10 +3,9 @@ NEWS
 
 ## TODO
 
-- add calc distancias
-- Revisar Ingles e terminar de traduzir
+- add function to calculate displacements
 
-### percolator 1.0.0 (Release date: 2022-09-28)
+### percolator 1.0.0 (Release date: 2024-03-13)
 - Removed obsolete packages (filtra_a, filtra_b, filtra_c, filtra_d,
   src/ --> all the fortran stuff, pre_filter, read_pcp, read_tb, filtra_extensions)
 - fixed filtra_saag bugs
