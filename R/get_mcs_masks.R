@@ -32,6 +32,7 @@
 #' @return netCDF
 #' @importFrom data.table fread fwrite setorder :=
 #' @importFrom ncdf4 nc_open nc_close ncvar_get
+#' @importFrom utils head tail
 #' @export
 #' @examples \dontrun{
 #' get_mcs_masks(year_start = 2001,
@@ -142,8 +143,8 @@ get_mcs_masks <- function(year_start,
                         ISOdate(year_end, month_end, day_end, hour_end, tz = "UTC"),
                         by = "hour")))
   ud2 <- strftime(ud, format = "%Y%m%d%H", tz = "UTC")
-  print(paste0("Start of dates sequency \n", head(ud)))
-  print(paste0("End of dates sequency \n", tail(ud)))
+  print(paste0("Start of dates sequency \n", utils::head(ud)))
+  print(paste0("End of dates sequency \n", utils::tail(ud)))
   
   # Initialize list for masks
   lbin <- list()

@@ -18,7 +18,6 @@
 #' @param pcp_time_name Character. Time variable name. Default: "time"
 #' @param area_file Character. Path to the area file.
 #' @param family_file Character. Path to the family file.
-#' @param path_to_prec_file Character. Path to the precipitation files.
 #' @param path_to_fortracc_clusters Character. Path to the ForTraCC cluster files.
 #' @param path_to_masks_files Character. Path to the masks files.
 #' @param plot Logical. If clusters over precipitation should be plotted at the
@@ -27,6 +26,9 @@
 #' @return A csv file.
 #' @importFrom data.table fread fwrite rbindlist :=
 #' @importFrom ncdf4 nc_open nc_close ncvar_get
+#' @importFrom ggplot2 ggplot geom_tile geom_contour scale_fill_gradient theme_minimal labs
+#' @importFrom reshape2 melt
+#' @importFrom grDevices dev.off png
 #' @export
 #' @examples \dontrun{
 #' get_prec_under_tb(month = 1,
@@ -48,7 +50,6 @@ get_prec_under_tb_mm <- function(month,
                               ncols,
                               nlins,
                               type,
-                              cluster_prefix,
                               family_file,
                               pcp_file,
                               pcp_varname,
@@ -226,9 +227,9 @@ get_prec_under_tb_mm <- function(month,
           ggplot2::labs(x = "", y = "",
                         title = paste0("Tb clusters (shaded) & Prec (contours)", SYS_date))
         
-        png(file.path(figs_dir, paste0(SYS_date, ".png")))
+        grDevices::png(file.path(figs_dir, paste0(SYS_date, ".png")))
         print(p)
-        dev.off()
+        grDevices::dev.off()
       }
       
     }

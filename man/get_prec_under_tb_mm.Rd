@@ -11,7 +11,6 @@ get_prec_under_tb_mm(
   ncols,
   nlins,
   type,
-  cluster_prefix,
   family_file,
   pcp_file,
   pcp_varname,
@@ -54,8 +53,6 @@ Ex: "pathi_to_prec/200101_PREC_ACC_NC-on_IMERG_grid.nc"}
 path_to_masks_files. See figs directory inside that path. Default: FALSE.}
 
 \item{area_file}{Character. Path to the area file.}
-
-\item{path_to_prec_file}{Character. Path to the precipitation files.}
 }
 \value{
 A csv file.
