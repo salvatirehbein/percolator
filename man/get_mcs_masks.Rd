@@ -18,7 +18,6 @@ get_mcs_masks(
   family_file,
   path_to_fortracc_clusters,
   cluster_prefix,
-  ofile_csv,
   ofile_mask,
   attribute = "Tb MCSs Masks from ForTraCC-percolator",
   reference_file = system.file("extdata/merg_2011010100_4km-pixel.nc", package =
@@ -46,13 +45,11 @@ get_mcs_masks(
 
 \item{nlins}{Integer. Number of lines relative to the native data.}
 
-\item{family_file}{Character. Path to the family file obtained by Fortracc. Must start with "fam_".}
+\item{family_file}{Character. Path to the family file obtained by get_mcs_csv.R}
 
 \item{path_to_fortracc_clusters}{Character. Path to the directory containing Fortracc clusters.}
 
 \item{cluster_prefix}{Character. Prefix for cluster files.}
-
-\item{ofile_csv}{Character. Output CSV file path for filtered data.}
 
 \item{ofile_mask}{Character. Output NetCDF file path for masks.}
 
@@ -88,10 +85,9 @@ get_mcs_masks(year_start = 2001,
             hour_end = 23,
             ncols = 480,
             nlins = 690,
-            family_file = "fam_SAAG_Tb_pcp_info_intermedio_FINAL_2001-2001_01.csv",
+            family_file = "MCSs_MASK/MCS_SAAG_WRF_p_2000.csv",
             path_to_fortracc_clusters = "clusters/",
             cluster_prefix = "WRF_20y_p_",
-            ofile_csv = "MCSs_MASK/MCS_SAAG_WRF_p_2000.csv",
             ofile_mask = "MCSs_MASK/2000_p_WRF_SAAG-MCS-mask-file.nc",
             attribute = "Description of the attribute",
             reference_file = system.file("extdata/merg_2011010100_4km-pixel.nc", 

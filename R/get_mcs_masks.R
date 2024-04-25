@@ -22,15 +22,14 @@
 #' @param hour_end Integer. Ending hour for filtering the data.
 #' @param ncols Integer. Number of columns relative to the native data.
 #' @param nlins Integer. Number of lines relative to the native data.
-#' @param family_file Character. Path to the family file obtained by Fortracc. Must start with "fam_".
+#' @param family_file Character. Path to the family file obtained by get_mcs_csv.R
 #' @param path_to_fortracc_clusters Character. Path to the directory containing Fortracc clusters.
 #' @param cluster_prefix Character. Prefix for cluster files.
-#' @param ofile_csv Character. Output CSV file path for filtered data.
 #' @param ofile_mask Character. Output NetCDF file path for masks.
 #' @param attribute Character. Description of the attribute for the NetCDF file.
 #' @param reference_file Character. Path to the reference file.
 #' @return netCDF
-#' @importFrom data.table fread fwrite setorder :=
+#' @importFrom data.table fread setorder :=
 #' @importFrom ncdf4 nc_open nc_close ncvar_get
 #' @importFrom utils head tail
 #' @export
@@ -45,10 +44,9 @@
 #'             hour_end = 23,
 #'             ncols = 480,
 #'             nlins = 690,
-#'             family_file = "fam_SAAG_Tb_pcp_info_intermedio_FINAL_2001-2001_01.csv",
+#'             family_file = "MCSs_MASK/MCS_SAAG_WRF_p_2000.csv",
 #'             path_to_fortracc_clusters = "clusters/",
 #'             cluster_prefix = "WRF_20y_p_",
-#'             ofile_csv = "MCSs_MASK/MCS_SAAG_WRF_p_2000.csv",
 #'             ofile_mask = "MCSs_MASK/2000_p_WRF_SAAG-MCS-mask-file.nc",
 #'             attribute = "Description of the attribute",
 #'             reference_file = system.file("extdata/merg_2011010100_4km-pixel.nc", 
@@ -67,78 +65,15 @@ get_mcs_masks <- function(year_start,
                         family_file,
                         path_to_fortracc_clusters,
                         cluster_prefix,
-                        ofile_csv,
                         ofile_mask,
                         attribute = "Tb MCSs Masks from ForTraCC-percolator",
                         reference_file = system.file("extdata/merg_2011010100_4km-pixel.nc", 
                                                      package = "percolator")
 ) {
   
-  # Read the data table from the family file
+  # Read the data table from get_mcs_csv.R
   dt <- data.table::fread(family_file)
   
-  # Print the number of families before filtering
-  print(paste0("# FAMILIES (before filter): ", length(unique(dt$FAMILY))))
-  
-  # Filter by Tb (brightness temperature) =< 225 K during 4 hours at least one pixel
-  dt$Tb_le_225K <- ifelse(dt$TMIN < 225 * 100, 1, 0)
-  dt[, counter2 := data.table::rowid(data.table::rleid(Tb_le_225K)), by = FAMILY]
-  FAMILIES <- dt[Tb_le_225K == 1 & counter2 >= 4, unique(FAMILY)]
-  if (length(FAMILIES) > 0) {
-    dt <- dt[FAMILY %in% FAMILIES,]
-  }; rm(FAMILIES)
-  
-  # Apply size criteria: minimum area of 40,000 km2 for at least 4 continuous hours
-  dt$criterio_size <- ifelse(dt$Tb_SIZE_km2 >= 40000, 1, 0)
-  dt[, counter := data.table::rowid(data.table::rleid(criterio_size)), by = FAMILY]
-  FAMILIES <- dt[criterio_size == 1 & counter >= 4, unique(FAMILY)]
-  if (length(FAMILIES) > 0) {
-    dt <- dt[FAMILY %in% FAMILIES,]
-  }; rm(FAMILIES)
-  
-  # Filter by precipitation (PCP) criteria
-  # 1 px >= 10mm/h in T>=4h
-  dt$pcp_min_criteria <- ifelse(dt$pcp_max >= 10, 1, 0)
-  dt[, counter3 := data.table::rowid(data.table::rleid(pcp_min_criteria)), by = FAMILY]
-  FAMILIES <- dt[pcp_min_criteria == 1 & counter3 >= 4, unique(FAMILY)]
-  if (length(FAMILIES) > 0) {
-    dt <- dt[FAMILY %in% FAMILIES,]
-  }; rm(FAMILIES)
-  
-  # Minimum rainfall volume of 20,000 km2 mm/h at least once in the lifetime of the MCS
-  dt$vol_criteria <- ifelse(dt$total_vol >= 20000, 1, 0)
-  FAMILIES <- dt[vol_criteria == 1, unique(FAMILY)]
-  if (length(FAMILIES) > 0) {
-    dt <- dt[FAMILY %in% FAMILIES,]
-  }; rm(FAMILIES)
-  
-  # Remove unnecessary variables
-  dt <- dt[, -c("vol_criteria", "pcp_min_criteria", "counter", "counter2", "counter3")]
-  
-  # Print the number of families after filtering
-  print(paste0("# FAMILIES (after filter PCP): ", length(unique(dt$FAMILY))))
-  
-  # Assign unique IDs to each family
-  dt[, FAMILY_new := .GRP, by = "FAMILY"]
-  dt$date <- paste0(sprintf(dt$YEAR, fmt = "%04d"),
-                    sprintf(dt$MONTH, fmt = "%02d"),
-                    sprintf(dt$DAY, fmt = "%02d"),
-                    sprintf(dt$HOUR, fmt = "%02d"))
-  
-  
-  if (file.exists(ofile_csv)) {
-    file.remove(ofile_csv)
-  } else {
-    print("no files to remove")
-  }
-  
-  # Write the filtered data to a CSV file
-  data.table::fwrite(dt, ofile_csv, row.names = FALSE)
-  print(paste0("Filtered data saved to CSV file: ", ofile_csv))
-  
-  
-  # INICIO DA SEGUNDA PARTE: SELECIONAR AS MASCARAS ####
-
   ud <- sort(unique(seq(ISOdate(year_start, month_start, day_start, hour_start, tz = "UTC"),
                         ISOdate(year_end, month_end, day_end, hour_end, tz = "UTC"),
                         by = "hour")))
@@ -162,7 +97,7 @@ get_mcs_masks <- function(year_start,
     SYS <- di$`SYS#`
     
     # Print SYS values (for debugging)
-    print(paste0("SYS = ", SYS))
+    print(paste0("date = ", dt_date, "  SYS = ", SYS))
     
     # Construct cluster file name
     cluster_name <- list.files(path = path_to_fortracc_clusters,
@@ -217,19 +152,19 @@ get_mcs_masks <- function(year_start,
   # Create a single vector containing all the masks for MCSs
   dbin <- unlist(lbin)
   
-  # Define the filename for the RDS file that will store the masks
+  # # Define the filename for the RDS file that will store the masks
   # fileo <- paste0(path_to_masks_files,
-  #                 "MCSs_SAAG_Masks_", year_start, "-", year_end, ".rds")
-  
-  # Check if a file with the same name already exists
-  # if (file.exists(fileo)) {
-  #   file.remove(fileo)
-  # } else {
-  #   print("no files to remove")
-  # }
-  
-  # Save the dbin vector as an RDS file with the defined filename
-  # saveRDS(dbin, file = fileo)
+  #                "MCSs_SAAG_Masks_", year_start, "-", year_end, ".rds")
+  # 
+  # # Check if a file with the same name already exists
+  #  if (file.exists(fileo)) {
+  #    file.remove(fileo)
+  #  } else {
+  #    print("no files to remove")
+  #  }
+  # 
+  # # Save the dbin vector as an RDS file with the defined filename
+  #  saveRDS(dbin, file = fileo)
   
   # Save netCDF with MCSs masks
   date_ini <- paste0(year_start, "-", 

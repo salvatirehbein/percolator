@@ -12,6 +12,7 @@ get_prec_under_tb_mm(
   nlins,
   type,
   family_file,
+  cluster_prefix,
   pcp_file,
   pcp_varname,
   pcp_time_name = "time",
