@@ -7,7 +7,7 @@ Authors@R: person("Amanda", "Rehbein",
   role = c("aut", "cre"), email = "amanda.rehbein@usp.br", 
     comment = c(ORCID = "0000-0002-8714-7931"))
 Description: Post-process Fortracc outputs.
-Imports: data.table, geosphere, sf, raster, MASS, ncdf4
+Imports: data.table, geosphere, sf, raster, MASS, ncdf4, ggplot2, reshape2
 Suggests: cptcity
 License: GPL-3
 URL: https://github.com/salvatirehbein/percolator/

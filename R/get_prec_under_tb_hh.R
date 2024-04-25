@@ -46,42 +46,12 @@ get_prec_under_tb <- function(month,
                               type,
                               cluster_prefix,
                               family_file,
-                              pcp_file,
-                              pcp_varname,
-                              pcp_time_name = "time", 
+                              path_to_prec_file,
                               path_to_fortracc_clusters,
                               path_to_masks_files,
                               area_file = system.file("extdata/grid_area_saag/area_wrf_km2.nc", 
                                                       package = "percolator")
 ) {
-  # Get precipitation file
-  read_netcdf <- function(file_path, 
-                          var_name, 
-                          time_name = "time") {
-    nc <- ncdf4::nc_open(file_path)
-    var <- ncdf4::ncvar_get(nc, var_name)
-    time_var <- ncdf4::ncvar_get(nc, time_name)
-    time_units <- ncdf4::ncatt_get(nc, time_name, "units")$value
-    start_date <- sub("hours since ", "", time_units)
-    start_date <- as.POSIXct(start_date, tz="UTC")
-    ncdf4::nc_close(nc)
-    pcp_date_seq <- seq(from = start_date, 
-                        by = "hour", 
-                        length.out = length(time_var))
-    l_all <- list(var, pcp_date_seq)
-    return(l_all)
-  }
-  if (file.exists(pcp_file)) {
-    l_pcp <- read_netcdf(file_path = pcp_file, 
-                         var_name = pcp_varname,
-                         time_name = pcp_time_name)
-  } else {
-    stop("File not found: ", pcp_file)
-  }
-  pcp_timesteps_df <- data.table::data.table(index = seq_along(l_pcp[[2]]),
-                                             date = l_pcp[[2]],
-                                             yyyymmddhh = format(l_pcp[[2]], 
-                                                                 "%Y%m%d%H"))
   
   # Open area file
   nc_area <- ncdf4::nc_open(area_file)
@@ -132,26 +102,34 @@ get_prec_under_tb <- function(month,
     # Iterate over rows in the dataframe
     for(j in seq_along(df$FAMILY)) {
       SYS <- df$`SYS#`[j]
-      SYS_date <- sprintf("%04d%02d%02d%02d", 
-                          df$YEAR[j], 
-                          df$MONTH[j],
-                          df$DAY[j], 
-                          df$HOUR[j])
       
-      # Precipitation file
+      # Construct file path based on data type
+      if (type == "IMERGE") {
+        arq_nc <- sprintf("%smerg_%04d%02d%02d%02d_4km-pixel.nc",
+                          path_to_prec_file, df$YEAR[j], df$MONTH[j],
+                          df$DAY[j], df$HOUR[j])
+      } else if (type == "WRF") {
+        arq_nc <- sprintf("%stb_rainrate_%04d-%02d-%02d_%02d.nc", 
+                          path_to_prec_file, df$YEAR[j], df$MONTH[j],
+                          df$DAY[j], df$HOUR[j])
+      } else {
+        stop("Invalid data type. Please specify either 'IMERGE' or 'WRF'.")
+      }
       
-      pcp_index <- pcp_timesteps_df[yyyymmddhh == SYS_date]$index
-      m_pcp <- l_pcp[[1]][,,pcp_index]
+      # Read precipitation data
+      nc <- ncdf4::nc_open(filename = arq_nc)
+      m_pcp <- ncdf4::ncvar_get(nc = nc,
+                                varid = if (type == "IMERGE") "precipitationCal" else "PREC_ACC_NC")
+      ncdf4::nc_close(nc)
       
       # Open Tb clusters
       cluster_files <- list.files(path = path_to_fortracc_clusters,
-                                  pattern = paste0(cluster_prefix, SYS_date), 
-                                  # sprintf("%s%04d%02d%02d%02d", 
-                                  #                 cluster_prefix, 
-                                  #                 df$YEAR[j], 
-                                  #                 df$MONTH[j], 
-                                  #                 df$DAY[j], 
-                                  #                 df$HOUR[j]),
+                                  pattern = sprintf("%s%04d%02d%02d%02d", 
+                                                    cluster_prefix, 
+                                                    df$YEAR[j], 
+                                                    df$MONTH[j], 
+                                                    df$DAY[j], 
+                                                    df$HOUR[j]),
                                   full.names = TRUE)
       
       if (length(cluster_files) > 0) {
