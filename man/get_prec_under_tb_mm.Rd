@@ -39,6 +39,8 @@ added at the dataset for identification purposes.}
 
 \item{family_file}{Character. Path to the family file.}
 
+\item{cluster_prefix}{Character.}
+
 \item{pcp_file}{Character. Precipitation monthly file name. 
 Ex: "pathi_to_prec/200101_PREC_ACC_NC-on_IMERG_grid.nc"}
 

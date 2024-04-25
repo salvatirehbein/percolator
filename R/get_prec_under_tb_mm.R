@@ -12,6 +12,7 @@
 #' added at the dataset for identification purposes.
 #' @param year_start Integer. Starting year of the data.
 #' @param year_end Integer. Ending year of the data.
+#' @param cluster_prefix Character. 
 #' @param pcp_file Character. Precipitation monthly file name. 
 #' Ex: "pathi_to_prec/200101_PREC_ACC_NC-on_IMERG_grid.nc"
 #' @param pcp_varname Character. Precipitation variable name. Ex: "PREC_ACC_NC"
