@@ -1,7 +1,7 @@
 Package: percolator
 Type: Package
 Title: ForTraCC Post-Processing Tool
-Version: 1.0
+Version: 1.1
 Date: 2024-04-17
 Authors@R: person("Amanda", "Rehbein", 
   role = c("aut", "cre"), email = "amanda.rehbein@usp.br", 

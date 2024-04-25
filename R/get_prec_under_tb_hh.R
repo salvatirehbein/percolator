@@ -38,7 +38,7 @@
 #'             path_to_fortracc_clusters = "clusters/",
 #'             path_to_masks_files = "MCSs_MASKs/")
 #' } 
-get_prec_under_tb <- function(month,
+get_prec_under_tb_hh <- function(month,
                               year_start,
                               year_end,
                               ncols,
