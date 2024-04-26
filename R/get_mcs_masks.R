@@ -53,22 +53,22 @@
 #'                                          package = "percolator")
 #' ) }
 get_mcs_masks <- function(year_start,
-                        month_start,
-                        day_start,
-                        hour_start,
-                        year_end,
-                        month_end,
-                        day_end,
-                        hour_end,
-                        ncols,
-                        nlins,
-                        family_file,
-                        path_to_fortracc_clusters,
-                        cluster_prefix,
-                        ofile_mask,
-                        attribute = "Tb MCSs Masks from ForTraCC-percolator",
-                        reference_file = system.file("extdata/merg_2011010100_4km-pixel.nc", 
-                                                     package = "percolator")
+                          month_start,
+                          day_start,
+                          hour_start,
+                          year_end,
+                          month_end,
+                          day_end,
+                          hour_end,
+                          ncols,
+                          nlins,
+                          family_file,
+                          path_to_fortracc_clusters,
+                          cluster_prefix,
+                          ofile_mask,
+                          attribute = "Tb MCSs Masks from ForTraCC-percolator",
+                          reference_file = system.file("extdata/merg_2011010100_4km-pixel.nc", 
+                                                       package = "percolator")
 ) {
   
   # Read the data table from get_mcs_csv.R
@@ -92,56 +92,65 @@ get_mcs_masks <- function(year_start,
     # Select the data for this date
     di <- dt[date == dt_date, ]
     
-    # Extract SYS values
-    di$v_bin2 <- di$`SYS#`
-    SYS <- di$`SYS#`
-    
-    # Print SYS values (for debugging)
-    print(paste0("date = ", dt_date, "  SYS = ", SYS))
-    
-    # Construct cluster file name
-    cluster_name <- list.files(path = path_to_fortracc_clusters,
-                               pattern = paste0(cluster_prefix,
-                                                substr(ud2[l], 1, 4),
-                                                substr(ud2[l], 5, 6), 
-                                                substr(ud2[l], 7, 8),
-                                                substr(ud2[l], 9, 10)),
-                               full.names = TRUE)
-    
-    # Check if cluster file exists
-    if (file.exists(cluster_name)) {
-      print(paste0("Reading cluster: ", cluster_name))
+    if (nrow(di) != 0) {
       
-      # Read binary cluster file
-      cluster <- file(cluster_name, "rb")
-      v_bin <- readBin(cluster,
-                       what = "integer",
-                       n = ncols * nlins * 2,
-                       size = 2)
-      close(cluster)
+      # Extract SYS values
+      di$v_bin2 <- di$`SYS#`
+      SYS <- di$`SYS#`
       
-      # Create data table for binary clusters
-      df_bin <- data.table::data.table(id = 1:length(v_bin),
-                                       v_bin = v_bin)
+      # Print SYS values (for debugging)
+      print(paste0("date = ", dt_date, "  SYS = ", SYS))
       
-      # Identify MCSs in binary clusters
-      df_bin[, v_bin2 := ifelse(v_bin %in% SYS, v_bin, NA)]
+      # Construct cluster file name
+      cluster_name <- list.files(path = path_to_fortracc_clusters,
+                                 pattern = paste0(cluster_prefix,
+                                                  substr(ud2[l], 1, 4),
+                                                  substr(ud2[l], 5, 6), 
+                                                  substr(ud2[l], 7, 8),
+                                                  substr(ud2[l], 9, 10)),
+                                 full.names = TRUE)
       
-      # Merge binary clusters with filtered families
-      df_bin <- merge(x = df_bin,
-                      y = di[, c("v_bin2", "FAMILY_new")],
-                      by = "v_bin2",
-                      all.x = TRUE)
-      data.table::setorderv(df_bin, "id")
+      # Check if cluster file exists
+      if (file.exists(cluster_name)) {
+        print(paste0("Reading cluster: ", cluster_name))
+        
+        # Read binary cluster file
+        cluster <- file(cluster_name, "rb")
+        v_bin <- readBin(cluster,
+                         what = "integer",
+                         n = ncols * nlins * 2,
+                         size = 2)
+        close(cluster)
+        
+        # Create data table for binary clusters
+        df_bin <- data.table::data.table(id = 1:length(v_bin),
+                                         v_bin = v_bin)
+        
+        # Identify MCSs in binary clusters
+        df_bin[, v_bin2 := ifelse(v_bin %in% SYS, v_bin, NA)]
+        
+        # Merge binary clusters with filtered families
+        df_bin <- merge(x = df_bin,
+                        y = di[, c("v_bin2", "FAMILY_new")],
+                        by = "v_bin2",
+                        all.x = TRUE)
+        data.table::setorderv(df_bin, "id")
+        
+        # Convert binary clusters to matrix format
+        m_bin2 <- matrix(df_bin$FAMILY_new,
+                         nrow = ncols,
+                         ncol = nlins)
+        lbin[[l]] <- m_bin2
+      } else {
+        print(paste0("File cluster ", cluster_name, " doesn`t exists!"))
+        # If cluster file does not exist, create a matrix of NA values
+        m_bin2 <- matrix(NA,
+                         nrow = ncols,
+                         ncol = nlins)
+        lbin[[l]] <- m_bin2
+      }
       
-      # Convert binary clusters to matrix format
-      m_bin2 <- matrix(df_bin$FAMILY_new,
-                       nrow = ncols,
-                       ncol = nlins)
-      lbin[[l]] <- m_bin2
     } else {
-      print(paste0("File cluster ", cluster_name, " doesn`t exists!"))
-      # If cluster file does not exist, create a matrix of NA values
       m_bin2 <- matrix(NA,
                        nrow = ncols,
                        ncol = nlins)

@@ -76,7 +76,6 @@ get_mcs_csv <- function(family_file,
                     sprintf(dt$DAY, fmt = "%02d"),
                     sprintf(dt$HOUR, fmt = "%02d"))
   
-  
   if (file.exists(ofile_csv)) {
     file.remove(ofile_csv)
   } else {
@@ -86,7 +85,6 @@ get_mcs_csv <- function(family_file,
   # Write the filtered data to a CSV file
   data.table::fwrite(dt, ofile_csv, row.names = FALSE)
   print(paste0("Filtered data saved to CSV file: ", ofile_csv))
-  
   
   print("FIM !!!!! ")
   # Need to run write_nc for generating the Mask files."
