@@ -27,7 +27,7 @@
 #' @return A csv file.
 #' @importFrom data.table fread fwrite rbindlist :=
 #' @importFrom ncdf4 nc_open nc_close ncvar_get
-#' @importFrom ggplot2 ggplot geom_tile geom_contour scale_fill_gradient theme_minimal labs
+#' @importFrom ggplot2 ggplot geom_tile geom_contour scale_fill_gradient theme_minimal labs aes
 #' @importFrom reshape2 melt
 #' @importFrom grDevices dev.off png
 #' @export
@@ -131,7 +131,7 @@ get_prec_under_tb_mm <- function(month,
       next
     }
     
-    print(paste0("MONTH = ", month, " FAMILY = ", i))
+    print(paste0("MONTH = ", month, " FAMILY = ", uf[i] , "  Max fam:", max(uf)))
     
     # Initialize lists to store results
     l_Tb_SIZE_km2 <- list()
@@ -222,8 +222,10 @@ get_prec_under_tb_mm <- function(month,
         
         # Plot
         p <- ggplot2::ggplot() +
-          ggplot2::geom_tile(data = mat1_df, aes(x = X, y = Y, fill = value), alpha = 0.8) +
-          ggplot2::geom_contour(data = mat2_df, aes(x = X, y = Y, z = value), color = "black") +
+          ggplot2::geom_tile(data = mat1_df, 
+                             ggplot2::aes(x = X, y = Y, fill = value), alpha = 0.8) +
+          ggplot2::geom_contour(data = mat2_df, 
+                                ggplot2::aes(x = X, y = Y, z = value), color = "black") +
           ggplot2::scale_fill_gradient(low = "blue", high = "red") +
           ggplot2::theme_minimal() +
           ggplot2::labs(x = "", y = "",
