@@ -120,14 +120,15 @@ get_prec_under_tb_mm <- function(month=NULL,
   message("(Please remember to use iterative job.)")
   
   # Iterate over unique families
-  ldf <- list()
   if (is.null(month)) {
     fams <- dt_fam
   } else {
     fams <- dt_fam[MONTH == month]
   }
-  uf <- unique(fams$FAMILY)
   
+  uf <- unique(fams$FAMILY)
+
+  ldf <- list()
   for(i in seq_along(uf)) {
     df <- fams[FAMILY == uf[i],]
     
