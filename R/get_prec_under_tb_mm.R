@@ -109,9 +109,29 @@ get_prec_under_tb_mm <- function(day=NULL,
   dt_fam$HOUR2 <- NULL
   
   # Define intermediate file path
-  intermedio_file <- paste0(path_to_masks_files, 
-                            "fam_SAAG_Tb_pcp_info_intermedio_", 
-                            year_start, "-", year_end, ".csv")
+  base_intermedio_path <- paste0(path_to_masks_files,
+                                 "/fam_SAAG_Tb_pcp_info_intermedio_",
+                                 year_start, "-", year_end)
+  if (is.null(month)) {
+    # Se o mês é NULL, não adiciona mês ou dia no nome do arquivo
+    intermedio_file <- paste0(base_intermedio_path, ".csv")
+  } else {
+    # Se mês não é NULL, converte para inteiro e formata o mês
+    month_int <- as.integer(month)
+    month_str <- sprintf("%02d", month_int)
+    if (is.null(day)) {
+      # Se o dia é NULL, adiciona apenas o mês
+      intermedio_file <- paste0(base_intermedio_path, "_", month_str, ".csv")
+    } else {
+      day_int <- as.integer(day)
+      day_str <- sprintf("%02d", day_int)
+      intermedio_file <- paste0(base_intermedio_path, "_", month_str, "_", day_str, ".csv")
+    }
+  }
+  
+  # intermedio_file <- paste0(path_to_masks_files, 
+  #                           "fam_SAAG_Tb_pcp_info_intermedio_", 
+  #                           year_start, "-", year_end, ".csv")
   
   # Remove intermediate file if exists
   if (file.exists(intermedio_file)) {
