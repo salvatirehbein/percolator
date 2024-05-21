@@ -10,7 +10,7 @@
 #' @param ofile Character. Character with the name of the output file.
 #' @param ntime Integer. Number of timesteps for the TIME dimension. 
 #' EX: ntime = 365*24.
-#' @param precision is the prec in ?ncvar_get. 
+#' @param compression_level Integer from 1 to 9. Default is 9 (highest compression).
 #' @return netCDF
 #' @importFrom data.table fread fwrite setorder
 #' @importFrom raster raster brick flip
@@ -32,9 +32,10 @@ write_nc <- function(attribute,
                      unit = "",
                      longname = "Tb MCSs Masks",
                      variable_name = "mcs_mask",
-                     author_name = "Amanda Rehbein",
-                     institution_name = "Climate Group of Studies (GrEC)/University of Sao Paulo (USP)",
-                     additional_comments = "Machado et al. (1998), Vila et al. (2008), Rehbein et al. (2020)"){
+                     compression_level = 9,
+                     author_name = NULL,
+                     institution_name = NULL,
+                     additional_comments = NULL){
   
   
   # Obtain a reference file for precipitation (must be from imerg because it has the lat long info)
@@ -63,7 +64,7 @@ write_nc <- function(attribute,
                           units = unit, 
                           dim = list(XLONG, XLAT, TIME),
                           longname=longname, 
-                          compression = 9, 
+                          compression = compression_level, 
                           missval = NA) 
   
   vars_file <- ncdf4::nc_create(filename = ofile,

@@ -14,6 +14,7 @@
 #' @param year_start Integer. Starting year of the data.
 #' @param year_end Integer. Ending year of the data.
 #' @param cluster_prefix Character. 
+#' @param basename Character. It's the basename for the output file. Default is "fam".
 #' @param pcp_file Character. Precipitation monthly file name. 
 #' Ex: "pathi_to_prec/200101_PREC_ACC_NC-on_IMERG_grid.nc"
 #' @param pcp_varname Character. Precipitation variable name. Ex: "PREC_ACC_NC"
@@ -58,6 +59,7 @@ get_prec_under_tb_mm <- function(day=NULL,
                               cluster_prefix,
                               pcp_file,
                               pcp_varname,
+                              basename = "fam",
                               pcp_time_name = "time", 
                               path_to_fortracc_clusters,
                               path_to_masks_files,
@@ -109,8 +111,8 @@ get_prec_under_tb_mm <- function(day=NULL,
   dt_fam$HOUR2 <- NULL
   
   # Define intermediate file path
-  base_intermedio_path <- paste0(path_to_masks_files,
-                                 "/fam_SAAG_Tb_pcp_info_intermedio_",
+  base_intermedio_path <- paste0(path_to_masks_files, "/", basename,
+                                 "_Tb_pcp_info_intermedio_",
                                  year_start, "-", year_end)
   if (is.null(month)) {
     # Se o mês é NULL, não adiciona mês ou dia no nome do arquivo
@@ -293,8 +295,8 @@ get_prec_under_tb_mm <- function(day=NULL,
   dt <- data.table::rbindlist(ldf)
   
   # Define FINAL file path
-  base_path <- paste0(path_to_masks_files, 
-                      "/fam_SAAG_Tb_pcp_info_intermedio_FINAL_",
+  base_path <- paste0(path_to_masks_files, "/", basename,
+                      "_Tb_pcp_info_intermedio_FINAL_",
                       year_start, "-", year_end)
   
   if (is.null(month)) {
