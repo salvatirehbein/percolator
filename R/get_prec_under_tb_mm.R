@@ -121,10 +121,17 @@ get_prec_under_tb_mm <- function(month=NULL,
   
   # Iterate over unique families
   if (is.null(month)) {
-    fams <- dt_fam
+    fams1 <- dt_fam
   } else {
-    fams <- dt_fam[MONTH == month]
+    fams1 <- dt_fam[MONTH == month]
   }
+  
+  if (is.null(day)) {
+    fams <- fams1
+  } else {
+    fams <- fams1[DAY == day]
+  }
+  
   
   uf <- unique(fams$FAMILY)
 
@@ -262,16 +269,28 @@ get_prec_under_tb_mm <- function(month=NULL,
   dt <- data.table::rbindlist(ldf)
   
   # Define FINAL file path
+  # Define o caminho base para o arquivo
+  base_path <- paste0(path_to_masks_files, 
+                      "/fam_SAAG_Tb_pcp_info_intermedio_FINAL_",
+                      year_start, "-", year_end)
+  
   if (is.null(month)) {
-    ofile <- paste0(path_to_masks_files,
-                    "/fam_SAAG_Tb_pcp_info_intermedio_FINAL_",
-                    year_start, "-", year_end, ".csv")
+    # Se o mês é NULL, não adiciona mês ou dia no nome do arquivo
+    ofile <- paste0(base_path, ".csv")
   } else {
-    ofile <- paste0(path_to_masks_files,
-                    "/fam_SAAG_Tb_pcp_info_intermedio_FINAL_",
-                    year_start, "-", year_end,
-                    "_", sprintf(as.integer(month), fmt = "%02d"), ".csv")
+    # Se mês não é NULL, adiciona o mês ao nome do arquivo
+    month_str <- sprintf("%02d", as.integer(month))
+    if (is.null(day)) {
+      # Se o dia é NULL, adiciona apenas o mês
+      ofile <- paste0(base_path, "_", month_str, ".csv")
+    } else {
+      # Se o dia não é NULL, adiciona tanto o mês quanto o dia, separados por "_"
+      day_str <- sprintf("%02d", as.integer(day))
+      ofile <- paste0(base_path, "_", month_str, "_", day_str, ".csv")
+    }
   }
+  
+  
   # ofile <- paste0(path_to_masks_files,
   #                 "/fam_SAAG_Tb_pcp_info_intermedio_FINAL_",
   #                 year_start, "-", year_end,
