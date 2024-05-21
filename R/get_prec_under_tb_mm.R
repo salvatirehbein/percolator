@@ -146,7 +146,9 @@ get_prec_under_tb_mm <- function(day=NULL,
       next
     }
     
-    print(paste0("MONTH = ", month, " FAMILY = ", uf[i] , "  Max fam:", max(uf)))
+    print(paste0("MONTH = ", month, 
+                 "DAY = ", day,
+                 " FAMILY = ", uf[i] , "  Max fam:", max(uf)))
     
     # Initialize lists to store results
     l_Tb_SIZE_km2 <- list()
@@ -272,7 +274,6 @@ get_prec_under_tb_mm <- function(day=NULL,
   dt <- data.table::rbindlist(ldf)
   
   # Define FINAL file path
-  # Define o caminho base para o arquivo
   base_path <- paste0(path_to_masks_files, 
                       "/fam_SAAG_Tb_pcp_info_intermedio_FINAL_",
                       year_start, "-", year_end)
@@ -281,14 +282,14 @@ get_prec_under_tb_mm <- function(day=NULL,
     # Se o mês é NULL, não adiciona mês ou dia no nome do arquivo
     ofile <- paste0(base_path, ".csv")
   } else {
-    # Se mês não é NULL, adiciona o mês ao nome do arquivo
-    month_str <- sprintf("%02d", as.integer(month))
+    month_int <- as.integer(month)
+    month_str <- sprintf("%02d", month_int)
     if (is.null(day)) {
       # Se o dia é NULL, adiciona apenas o mês
       ofile <- paste0(base_path, "_", month_str, ".csv")
     } else {
-      # Se o dia não é NULL, adiciona tanto o mês quanto o dia, separados por "_"
-      day_str <- sprintf("%02d", as.integer(day))
+      day_int <- as.integer(day)
+      day_str <- sprintf("%02d", day_int)
       ofile <- paste0(base_path, "_", month_str, "_", day_str, ".csv")
     }
   }
@@ -306,6 +307,7 @@ get_prec_under_tb_mm <- function(day=NULL,
     print("no files to remove")
   }
   
+  print(paste0("Saving ", ofile))
   # Save the FINAL Monthly file
   data.table::fwrite(dt,
                      file = ofile,
