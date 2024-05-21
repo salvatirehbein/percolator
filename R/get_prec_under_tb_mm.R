@@ -166,9 +166,8 @@ get_prec_under_tb_mm <- function(day=NULL,
       next
     }
     
-    print(paste0("MONTH = ", month, 
-                 "DAY = ", day,
-                 " FAMILY = ", uf[i] , "  Max fam:", max(uf)))
+    print(paste0("MONTH = ", month, " DAY = ", day, " FAMILY = ", uf[i] , " / ",
+                 length(uf), "  Max fam:", max(uf)))
     
     # Initialize lists to store results
     l_Tb_SIZE_km2 <- list()
@@ -333,8 +332,8 @@ get_prec_under_tb_mm <- function(day=NULL,
                      file = ofile,
                      row.names = FALSE)
   
-  print(paste0("Precipitation under Tb contiguous area for ", year_start,
-               "-", sprintf(month,fmt="%02d")," were just obtained."))
+  print(paste0("Precipitation under Tb contiguous area for ", ofile,
+               " were just obtained."))
   print("FIM !!!!! ")
   # Need to run step_02 and write_nc for generating the Mask files."
 }
