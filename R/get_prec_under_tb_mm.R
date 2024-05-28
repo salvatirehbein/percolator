@@ -296,6 +296,7 @@ get_prec_under_tb_mm <- function(day=NULL,
   # Get the final data.table with the calculations
   dt <- data.table::rbindlist(ldf)
   dt$MONTH_INI <- NULL
+  dt$DAY_INI <- NULL
   
   # Define FINAL file path
   base_path <- paste0(path_to_masks_files, "/", basename,
