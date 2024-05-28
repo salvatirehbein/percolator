@@ -17,10 +17,10 @@ write_nc(
   unit = "",
   longname = "Tb MCSs Masks",
   variable_name = "mcs_mask",
-  author_name = "Amanda Rehbein",
-  institution_name = "Climate Group of Studies (GrEC)/University of Sao Paulo (USP)",
-  additional_comments =
-    "Machado et al. (1998), Vila et al. (2008), Rehbein et al. (2020)"
+  compression_level = 9,
+  author_name = NULL,
+  institution_name = NULL,
+  additional_comments = NULL
 )
 }
 \arguments{
@@ -37,7 +37,7 @@ netCDF file.}
 \item{ntime}{Integer. Number of timesteps for the TIME dimension. 
 EX: ntime = 365*24.}
 
-\item{precision}{is the prec in ?ncvar_get.}
+\item{compression_level}{Integer from 1 to 9. Default is 9 (highest compression).}
 }
 \value{
 netCDF

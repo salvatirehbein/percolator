@@ -106,9 +106,11 @@ get_prec_under_tb_mm <- function(day=NULL,
   
   # Read family data
   dt_fam <- data.table::fread(family_file, fill = TRUE)
-  dt_fam$HOUR3 <- dt_fam$HOUR
+  dt_fam$HOUR_INI <- dt_fam$HOUR
   dt_fam$HOUR <- dt_fam$HOUR2
   dt_fam$HOUR2 <- NULL
+  dt_fam$MONTH_INI <- ifelse(trunc(dt_fam$TIME) == 0, dt_fam$MONTH, NA)
+  dt_fam$DAY_INI <- ifelse(trunc(dt_fam$TIME) == 0, dt_fam$DAY, NA)
   
   # Define intermediate file path
   base_intermedio_path <- paste0(path_to_masks_files, "/", basename,
@@ -148,13 +150,13 @@ get_prec_under_tb_mm <- function(day=NULL,
   if (is.null(month)) {
     fams1 <- dt_fam
   } else {
-    fams1 <- dt_fam[MONTH == month]
+    fams1 <- dt_fam[MONTH_INI == month]
   }
   
   if (is.null(day)) {
     fams <- fams1
   } else {
-    fams <- fams1[DAY == day]
+    fams <- fams1[DAY_INI == day]
   }
   
   
@@ -293,6 +295,7 @@ get_prec_under_tb_mm <- function(day=NULL,
   
   # Get the final data.table with the calculations
   dt <- data.table::rbindlist(ldf)
+  dt$MONTH_INI <- NULL
   
   # Define FINAL file path
   base_path <- paste0(path_to_masks_files, "/", basename,

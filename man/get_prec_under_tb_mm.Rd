@@ -6,6 +6,7 @@
 \title{Calculate Precipitation related to the ForTraCC Tb objects}
 \usage{
 get_prec_under_tb_mm(
+  day = NULL,
   month = NULL,
   year_start,
   year_end,
@@ -16,6 +17,7 @@ get_prec_under_tb_mm(
   cluster_prefix,
   pcp_file,
   pcp_varname,
+  basename = "fam",
   pcp_time_name = "time",
   path_to_fortracc_clusters,
   path_to_masks_files,
@@ -25,6 +27,7 @@ get_prec_under_tb_mm(
 )
 
 get_prec_under_tb_mm(
+  day = NULL,
   month = NULL,
   year_start,
   year_end,
@@ -35,6 +38,7 @@ get_prec_under_tb_mm(
   cluster_prefix,
   pcp_file,
   pcp_varname,
+  basename = "fam",
   pcp_time_name = "time",
   path_to_fortracc_clusters,
   path_to_masks_files,
@@ -44,6 +48,8 @@ get_prec_under_tb_mm(
 )
 }
 \arguments{
+\item{day}{Integer. Day of the tracking or NULL (default).}
+
 \item{month}{Integer. Month of the tracking or NULL (default).}
 
 \item{year_start}{Integer. Starting year of the data.}
@@ -65,6 +71,8 @@ added at the dataset for identification purposes.}
 Ex: "pathi_to_prec/200101_PREC_ACC_NC-on_IMERG_grid.nc"}
 
 \item{pcp_varname}{Character. Precipitation variable name. Ex: "PREC_ACC_NC"}
+
+\item{basename}{Character. It's the basename for the output file. Default is "fam".}
 
 \item{pcp_time_name}{Character. Time variable name. Default: "time"}
 
@@ -95,7 +103,8 @@ input files with hourly precipitation.
 }
 \examples{
 \dontrun{
-get_prec_under_tb(month = 1,
+get_prec_under_tb(day=NULL,
+            month = 1,
             ncols = 480,
             nlins = 690,
             type = "WRF",
@@ -109,7 +118,8 @@ get_prec_under_tb(month = 1,
             path_to_masks_files = "MCSs_MASKs/")
 } 
 \dontrun{
-get_prec_under_tb(month = 1,
+get_prec_under_tb(day=NULL,
+            month = 1,
             ncols = 480,
             nlins = 690,
             type = "WRF",
