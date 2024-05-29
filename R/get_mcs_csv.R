@@ -56,7 +56,7 @@ get_mcs_csv <- function(family_file,
   }; rm(FAMILIES)
   
   # Minimum rainfall volume of 20,000 km2 mm/h at least once in the lifetime of the MCS
-  dt$vol_criteria <- ifelse(dt$total_vol >= 20000, 1, 0)
+  dt$vol_criteria <- ifelse(dt$pcp_total_vol >= 20000, 1, 0)
   FAMILIES <- dt[vol_criteria == 1, unique(FAMILY)]
   if (length(FAMILIES) > 0) {
     dt <- dt[FAMILY %in% FAMILIES,]

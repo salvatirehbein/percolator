@@ -111,6 +111,8 @@ get_prec_under_tb_mm <- function(day=NULL,
   dt_fam$HOUR2 <- NULL
   dt_fam$MONTH_INI <- ifelse(trunc(dt_fam$TIME) == 0, dt_fam$MONTH, NA)
   dt_fam$DAY_INI <- ifelse(trunc(dt_fam$TIME) == 0, dt_fam$DAY, NA)
+  dt_fam[, MONTH_INI := MONTH_INI[which(!is.na(MONTH_INI))[1]], by = FAMILY]
+  dt_fam[, DAY_INI := DAY_INI[which(!is.na(DAY_INI))[1]], by = FAMILY]
   
   # Define intermediate file path
   base_intermedio_path <- paste0(path_to_masks_files, "/", basename,
